@@ -1,0 +1,20 @@
+{
+  "name": "chesstwo",
+  "version": "1.0.0",
+  "description": "GOTY Edition",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^24.1.2"
+  },
+  "dependencies": {
+    "@chrisoakman/chessboardjs": "^1.0.0",
+    "chess.js": "^1.0.0-beta.5",
+    "chessground": "^8.3.7"
+  }
+}
