@@ -1815,5 +1815,3 @@
   window['Chessboard']['fenToObj'] = fenToObj
   window['Chessboard']['objToFen'] = objToFen
 })() // end anonymous wrapper
-
-exports.Chessboard = window.Chessboard;
