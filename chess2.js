@@ -1,3 +1,15 @@
+const GameTags = {
+    FOG:"You can only see spaces your pieces can move to",
+    STAMINA:"Each piece needs stamina to move",
+    VAMPIRE:"Pieces gain the powers of pieces they've captured",
+    SHIELDS:"Pieces can have a shield that prevents capture, consumed on use",
+    WRAP:"The left and right sides of the board wrap around",
+    LOYALTY:"Pieces may defect to the other side",
+    HITCHANCE:"Pieces may fail to capture",
+    BOMBERS:"Pieces explode after X moves, capturing themselves and adjecent spaces",
+    RELOAD:"Pawn promotion requires a quicktime minigame",
+}
+
 function piece(fenId) {
     const color = (fenId >= 'A' && fenId <= 'Z') ? "white" : "black";
     switch(fenId.toLowerCase()){
@@ -220,38 +232,69 @@ class King extends Piece {
     }
 }
 
-function Chess(fen) {
-    const rows = fen.split(' ')[0].split('/');
-    let turn = fen.split(' ')[1];
-    const board = [];
-  
-    for (let i = 0; i < rows.length; i++) {
-      const row = [];
-      let col = 0;
-  
-      for (let j = 0; j < rows[i].length; j++) {
-        const char = rows[i][j];
-  
-        if (isNaN(char)) {
-          row.push(piece(char));
-          col++;
-        } else {
-          col += parseInt(char);
+function algebraicToIndex(algebraic){
+    return [8 - algebraic.charAt(1), algebraic.charCodeAt(0) - 97]
+}
+
+function indexToAlgebraic(index){
+    return String.fromCharCode(index[1]+97) + Math.abs(index[0] - 8);
+}
+
+class Chess {
+    constructor(fen){
+        const rows = fen.split(' ')[0].split('/');
+        this.turn = fen.split(' ')[1];
+        this.board = [];
+        this.mods = [];
+      
+        for (let i = 0; i < rows.length; i++) {
+          const row = [];
+          let col = 0;
+      
+          for (let j = 0; j < rows[i].length; j++) {
+            const char = rows[i][j];
+      
+            if (isNaN(char)) {
+              row.push(piece(char));
+              col++;
+            } else {
+              col += parseInt(char);
+            }
+          }
+      
+          while (row.length < 8) {
+            row.push(null);
+          }
+      
+          this.board.push(row);
         }
-      }
-  
-      while (row.length < 8) {
-        row.push(null);
-      }
-  
-      board.push(row);
     }
 
-    const isLegalMove = (from, to) => {
-        const source = [8 - from.from.charAt(1), from.from.charCodeAt(0) - 97]
-        const target = [8 - from.to.charAt(1), from.to.charCodeAt(0) - 97]
-        const piece = board[source[0]][source[1]];
-        const targetPiece = board[target[0]][target[1]];
+    moves(color){
+        let moves = [];
+        for (let i = 0; i < this.board.length; i++) {    
+            for (let j = 0; j < this.board[i].length; j++) {
+              const piece = this.board[i][j];
+                
+              if (!!piece && (color === "any" || color === piece.color)) {
+                for(let x = 0; x < this.board.length; x++){
+                    for(let y = 0; y < this.board[x].length; y++){
+                        if(this.isLegalMove(indexToAlgebraic([i,j]),indexToAlgebraic([x,y]))){
+                            moves.push({from:indexToAlgebraic([i,j]),to:indexToAlgebraic([x,y])});
+                        }
+                    }
+                }
+              }
+            }
+        }
+        return moves;
+    }
+
+    isLegalMove(from, to) {
+        const source = algebraicToIndex(from);
+        const target = algebraicToIndex(to);
+        const piece = this.board[source[0]][source[1]];
+        const targetPiece = this.board[target[0]][target[1]];
     
         if (!piece) {
           return false;
@@ -261,56 +304,94 @@ function Chess(fen) {
             return false;
         }
     
-        return piece.isLegalMove(source,target,targetPiece,board);
-  };
-     
-  
-    return {
-        game_over: function() {
-            return false;
-        },
-        move: function(from, to) {
-            isLegal = isLegalMove(from, to);
-            if(isLegal){
-                const source = [8-from.from.charAt(1), from.from.charCodeAt(0) - 97]
-                const target = [8-from.to.charAt(1), from.to.charCodeAt(0) - 97]
-                const piece = board[source[0]][source[1]];
-                board[source[0]][source[1]] = null;
-                board[target[0]][target[1]] = piece;
-            }
-            return isLegal;
-        },
-        fen: function() {
-            let fen = '';
-            let emptySquares = 0;
-        
-            for (let i = 0; i < board.length; i++) {
-              if (i !== 0) {
-                fen += '/';
-              }
-        
-              for (let j = 0; j < board[i].length; j++) {
-                const piece = board[i][j];
-        
-                if (piece) {
-                  if (emptySquares) {
-                    fen += emptySquares;
-                    emptySquares = 0;
-                  }
-        
-                  fen += piece.fen();
-                } else {
-                  emptySquares++;
-                }
-              }
-        
+        return piece.isLegalMove(source,target,targetPiece,this.board);
+    }
+
+    game_over(){
+        return false;
+    }
+
+    fenFow(){
+        let fen = '';
+        let emptySquares = 0;
+        let sight = this.moves("white").map((move) =>{
+            return algebraicToIndex(move.to).toString();
+        });
+    
+        for (let i = 0; i < this.board.length; i++) {
+          if (i !== 0) {
+            fen += '/';
+          }
+    
+          for (let j = 0; j < this.board[i].length; j++) {
+            const piece = this.board[i][j];
+            
+            if (piece && (piece.color === "white" || sight.includes([i,j].toString()))) {
               if (emptySquares) {
                 fen += emptySquares;
                 emptySquares = 0;
               }
+              
+              fen += piece.fen();
+            } else {
+              emptySquares++;
             }
-        
-            return fen;
           }
-    };
-  }
+    
+          if (emptySquares) {
+            fen += emptySquares;
+            emptySquares = 0;
+          }
+        }
+    
+        return fen;
+    }
+     
+    fen() {
+        if(this.mods.includes(GameTags.FOG)){return this.fenFow()}
+        let fen = '';
+        let emptySquares = 0;
+    
+        for (let i = 0; i < this.board.length; i++) {
+          if (i !== 0) {
+            fen += '/';
+          }
+    
+          for (let j = 0; j < this.board[i].length; j++) {
+            const piece = this.board[i][j];
+    
+            if (piece) {
+              if (emptySquares) {
+                fen += emptySquares;
+                emptySquares = 0;
+              }
+    
+              fen += piece.fen();
+            } else {
+              emptySquares++;
+            }
+          }
+    
+          if (emptySquares) {
+            fen += emptySquares;
+            emptySquares = 0;
+          }
+        }
+    
+        return fen;
+    }
+  
+    move(from, to) {
+        const isLegal = this.isLegalMove(from, to);
+        if(isLegal){
+            const source = [8-from.charAt(1), from.charCodeAt(0) - 97]
+            const target = [8-to.charAt(1), to.charCodeAt(0) - 97]
+            const piece = this.board[source[0]][source[1]];
+            this.board[source[0]][source[1]] = null;
+            this.board[target[0]][target[1]] = piece;
+            this.turn = this.turn == 'w' ? 'b' : 'w';
+        }
+        return isLegal;
+    }
+}
+ 

@@ -2,10 +2,10 @@ const { app, BrowserWindow } = require('electron')
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 415,
-    height: 415
+    minWidth: 415,
+    minHeight: 415
   });
-  win.setTitle("Chess Two: Game of the Year Edition");
+  win.setTitle("Chess 2: Game of the Year Edition");
   win.removeMenu();
   win.loadFile('index.html');
 }
