@@ -15,17 +15,21 @@ function piece(fenId) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
-      return new Piece(color, fenId, ["pawn"]);
+      return new Piece(color, fenId, "Pawn", ["pawn"], true);
     case "b":
-      return new Piece(color, fenId, ["diagonal"]);
+      return new Piece(color, fenId, "Bishop", ["diagonal"]);
     case "n":
-      return new Piece(color, fenId, ["knight"]);
+      return new Piece(color, fenId, "Knight", ["knight"]);
     case "r":
-      return new Piece(color, fenId, ["vertical", "horizontal"]);
+      return new Piece(color, fenId, "Rook", ["vertical", "horizontal"]);
     case "q":
-      return new Piece(color, fenId, ["vertical", "horizontal", "diagonal"]);
+      return new Piece(color, fenId, "Queen", [
+        "vertical",
+        "horizontal",
+        "diagonal",
+      ]);
     case "k":
-      return new Piece(color, fenId, ["king"]);
+      return new Piece(color, fenId, "King", ["king"]);
     default:
       console.log("Unrecognized piece");
       return new Piece(color, fenId);
@@ -33,10 +37,23 @@ function piece(fenId) {
 }
 
 class Piece {
-  constructor(color, fenId, moveTypes = []) {
+  constructor(color, fenId, name = fenId, moveTypes = [], hasShield = false) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
+    this.hasShield = hasShield;
+    this.name = name;
+  }
+  info(game) {
+    let details = "";
+    details += `${this.color} ${this.name}\n`;
+    if (game.mods.includes(GameTags.VAMPIRE)) {
+      details += this.moveTypes + "\n";
+    }
+    if (game.mods.includes(GameTags.SHIELDS) && this.hasShield) {
+      details += "Shielded\n";
+    }
+    return details;
   }
   fen() {
     return this.color === "white"
@@ -430,6 +447,16 @@ class Chess {
     }
   }
 
+  getPieceInfo(square) {
+    const index = algebraicToIndex(square);
+    const piece = this.board[index[0]][index[1]];
+    if (piece) {
+      //TODO: don't show hidden enemy pieces
+      return piece.info(this);
+    }
+    return null;
+  }
+
   moves(from) {
     let moves = [];
 
@@ -576,6 +603,13 @@ class Chess {
       const target = [8 - to.charAt(1), to.charCodeAt(0) - 97];
       const targetPiece = this.board[target[0]][target[1]];
       const piece = this.board[source[0]][source[1]];
+
+      if (this.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
+        targetPiece.hasShield = false;
+        this.turn = this.turn == "w" ? "b" : "w";
+        return true;
+      }
+
       if (this.mods.includes(GameTags.VAMPIRE) && targetPiece) {
         targetPiece.moveTypes.forEach((value) => {
           if (!piece.moveTypes.includes(value)) {
@@ -583,6 +617,7 @@ class Chess {
           }
         });
       }
+
       this.board[source[0]][source[1]] = null;
       this.board[target[0]][target[1]] = piece;
       this.turn = this.turn == "w" ? "b" : "w";

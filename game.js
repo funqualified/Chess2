@@ -8,7 +8,7 @@ game.mods.push(GameTags.VAMPIRE);
 game.mods.push(GameTags.FOG);
 // game.mods.push(GameTags.HITCHANCE);
 // game.mods.push(GameTags.RELOAD);
-// game.mods.push(GameTags.SHIELDS);
+game.mods.push(GameTags.SHIELDS);
 // game.mods.push(GameTags.STAMINA);
 // game.mods.push(GameTags.WRAP);
 // game.mods.push(GameTags.VAMPIRE);
@@ -57,6 +57,11 @@ var whiteSquareGrey = "#a9a9a9";
 var blackSquareGrey = "#696969";
 
 function onMouseoverSquare(square, piece) {
+  const info = game.getPieceInfo(square);
+  if (info) {
+    document.getElementById("details").innerHTML = `<pre>${info}</pre>`;
+  }
+
   // get list of possible moves for this square
   var moves = game.moves(square);
 
@@ -74,6 +79,7 @@ function onMouseoverSquare(square, piece) {
 
 function onMouseoutSquare(square, piece) {
   removeGreySquares();
+  document.getElementById("details").innerHTML = "";
 }
 
 function removeGreySquares() {
