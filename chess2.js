@@ -185,7 +185,7 @@ class Piece {
             for (let o = maxRow + 1; o != minRow; o++) {
               if (o >= game.board[source[0]].length) {
                 o = 0;
-                if (source[1] == o) {
+                if (minRow == o) {
                   return true;
                 }
               }
@@ -430,13 +430,27 @@ class Chess {
     }
   }
 
-  moves(color) {
+  moves(from) {
     let moves = [];
+
+    if (from.length === 2) {
+      for (let x = 0; x < this.board.length; x++) {
+        for (let y = 0; y < this.board[x].length; y++) {
+          if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
+            moves.push({
+              from: from,
+              to: indexToAlgebraic([x, y]),
+            });
+          }
+        }
+      }
+    }
+
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
 
-        if (!!piece && (color === "any" || color === piece.color)) {
+        if (!!piece && (from === "" || from === piece.color)) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
               if (
