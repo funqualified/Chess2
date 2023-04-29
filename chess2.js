@@ -11,7 +11,7 @@ const GameTags = {
   RELOAD: "Pawn promotion requires a quicktime minigame",
 };
 
-function piece(fenId) {
+function pieceFactory(fenId) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
@@ -455,12 +455,12 @@ function indexToAlgebraic(index) {
 }
 
 class Chess {
-  constructor(fen) {
+  constructor(fen, color = "white") {
     const rows = fen.split(" ")[0].split("/");
     this.turn = fen.split(" ")[1];
     this.board = [];
     this.mods = [];
-    this.playerColor = "white";
+    this.playerColor = color;
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
@@ -470,7 +470,7 @@ class Chess {
         const char = rows[i][j];
 
         if (isNaN(char)) {
-          row.push(piece(char));
+          row.push(pieceFactory(char));
         } else {
           for (let o = 0; o < parseInt(char); o++) {
             row.push(null);

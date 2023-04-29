@@ -1,26 +1,19 @@
 var board = null;
 var game = null;
+var multiplayer = false;
 
-function startGame(mods = [], multiplayer = false) {
+function startGame(mods = [], isMultiplayer = false, color = "white") {
   document.getElementById("game-space").innerHTML =
     "<div id='myBoard' class='board'></div><div class='info-container'><div id='space-details' class='info-box'></div><div id='game-details' class='info-box'></div></div>";
   document.getElementById("menu-space").classList.add("hide");
-  game = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  game = new Chess(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    color
+  );
   mods.forEach((element) => {
     game.mods.push(element);
   });
-  //game.mods.push(GameTags.WRAP);
-  //game.mods.push(GameTags.VAMPIRE);
-  // game.mods.push(GameTags.BOMBERS);
-  //game.mods.push(GameTags.FOG);
-  // game.mods.push(GameTags.HITCHANCE);
-  // game.mods.push(GameTags.RELOAD);
-  //game.mods.push(GameTags.SHIELDS);
-  // game.mods.push(GameTags.STAMINA);
-  //game.mods.push(GameTags.LOYALTY);
-  // game.mods.push(GameTags.VAMPIRE);
-  // game.mods.push(GameTags.WRAP);
-  // game.mods.push(GameTags.VAMPIRE);
+  multiplayer = isMultiplayer;
   const info = game.getGameInfo();
   if (info) {
     document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
@@ -32,6 +25,7 @@ function startGame(mods = [], multiplayer = false) {
   var config = {
     draggable: true,
     position: game.fen(),
+    orientation: color,
     onDragStart: onDragStart,
     onDrop: onDrop,
     onSnapEnd: onSnapEnd,
@@ -45,9 +39,14 @@ function startGame(mods = [], multiplayer = false) {
 function onDragStart(source, piece, position, orientation) {
   // do not pick up pieces if the game is over
   if (game.game_over()) return false;
+  if (game.turn != game.playerColor.charAt(0)) return false;
 
   // only pick up pieces for White
-  if (piece.search(/^b/) !== -1) return false;
+  if (game.playerColor == "white") {
+    if (piece.search(/^b/) !== -1) return false;
+  } else {
+    if (piece.search(/^w/) !== -1) return false;
+  }
 }
 
 function makeRandomMove() {
@@ -74,10 +73,14 @@ function onDrop(source, target) {
   // illegal move
   if (!move) {
     return "snapback";
+  } else if (multiplayer && peerIsConnected) {
+    conn.send({ board: game.board, turn: game.turn });
   }
 
   // make random legal move for black
-  window.setTimeout(makeRandomMove, 250);
+  if (!multiplayer) {
+    window.setTimeout(makeRandomMove, 250);
+  }
 }
 
 var whiteSquareGrey = "#a9a9a9";

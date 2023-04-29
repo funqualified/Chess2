@@ -11,13 +11,11 @@ function hostMultiplayer() {
   $("input:checkbox[name=mods]:checked").each(function () {
     mods.push(GameTags[$(this).val()]);
   });
-  startGame(mods);
+
+  startGame(mods, true);
+  hostGame();
 }
 
-function connectMultiplayer() {
-  mods = [];
-  $("input:checkbox[name=mods]:checked").each(function () {
-    mods.push(GameTags[$(this).val()]);
-  });
-  startGame(mods);
+function joinMultiplayer() {
+  joinGame($('input[name="PeerId"]').val());
 }
