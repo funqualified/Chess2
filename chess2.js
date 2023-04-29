@@ -29,7 +29,7 @@ function piece(fenId) {
         "diagonal",
       ]);
     case "k":
-      return new Piece(color, fenId, "King", ["king"]);
+      return new Piece(color, fenId, "King", ["king"], false, 100);
     default:
       console.log("Unrecognized piece");
       return new Piece(color, fenId);
@@ -37,21 +37,60 @@ function piece(fenId) {
 }
 
 class Piece {
-  constructor(color, fenId, name = fenId, moveTypes = [], hasShield = false) {
+  constructor(
+    color,
+    fenId,
+    name = fenId,
+    moveTypes = [],
+    hasShield = false,
+    loyalty = 10
+  ) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
     this.name = name;
+    this.loyalty = loyalty;
   }
+
+  endOfTurn(game, moves) {
+    if (game.mods.includes(GameTags.LOYALTY)) {
+      if (this.fenId.toLowerCase() === "k") {
+        this.loyalty = 100;
+      } else {
+        this.loyalty += 1;
+        moves.forEach((move) => {
+          const index = algebraicToIndex(move.to);
+          console.log(game.board[index[0]][index[1]]);
+          if (game.board[index[0]][index[1]] === this) {
+            this.loyalty -= 2;
+          }
+        });
+      }
+      if (this.loyalty > 100) {
+        this.loyalty = 100;
+      }
+      if (this.loyalty < 0) {
+        this.loyalty = Math.abs(this.loyalty);
+        this.color = this.color == "white" ? "black" : "white";
+      }
+    }
+  }
+
   info(game) {
     let details = "";
-    details += `${this.color} ${this.name}\n`;
+    details += `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${
+      this.name
+    }\n`;
+    details += "Abilities:\n";
     if (game.mods.includes(GameTags.VAMPIRE)) {
-      details += this.moveTypes + "\n";
+      details += "Move " + this.moveTypes + "\n";
     }
     if (game.mods.includes(GameTags.SHIELDS) && this.hasShield) {
       details += "Shielded\n";
+    }
+    if (game.mods.includes(GameTags.LOYALTY)) {
+      details += `Loyalty:${this.loyalty}\n`;
     }
     return details;
   }
@@ -422,6 +461,7 @@ class Chess {
     this.turn = fen.split(" ")[1];
     this.board = [];
     this.mods = [];
+    this.playerColor = "white";
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
@@ -451,24 +491,52 @@ class Chess {
     const index = algebraicToIndex(square);
     const piece = this.board[index[0]][index[1]];
     if (piece) {
-      //TODO: don't show hidden enemy pieces
+      if (this.mods.includes(GameTags.FOG)) {
+        let sight = this.moves(this.playerColor).map((move) => {
+          return algebraicToIndex(move.to).toString();
+        });
+        if (
+          sight.includes(index?.toString()) ||
+          piece.color == this.playerColor
+        ) {
+          return piece.info(this);
+        }
+        return null;
+      }
       return piece.info(this);
     }
     return null;
   }
 
-  moves(from) {
+  getGameInfo() {
+    return `Mods\n${this.mods}`;
+  }
+
+  moves(from, playerVisable = false) {
     let moves = [];
 
-    if (from.length === 2) {
-      for (let x = 0; x < this.board.length; x++) {
-        for (let y = 0; y < this.board[x].length; y++) {
-          if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
-            moves.push({
-              from: from,
-              to: indexToAlgebraic([x, y]),
-            });
+    if (from?.length === 2) {
+      if (playerVisable && this.mods.includes(GameTags.FOG)) {
+        let sight = this.moves(this.playerColor).map((move) => {
+          return algebraicToIndex(move.to).toString();
+        });
+        const index = algebraicToIndex(from);
+        const piece = this.board[index[0]][index[1]];
+        if (
+          sight.includes(index?.toString()) ||
+          piece?.color == this.playerColor
+        ) {
+          for (let x = 0; x < this.board.length; x++) {
+            for (let y = 0; y < this.board[x].length; y++) {
+              if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
+                moves.push({
+                  from: from,
+                  to: indexToAlgebraic([x, y]),
+                });
+              }
+            }
           }
+          return moves;
         }
       }
     }
@@ -476,8 +544,7 @@ class Chess {
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
-
-        if (!!piece && (from === "" || from === piece.color)) {
+        if (!!piece && (from === "" || !from || from === piece.color)) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
               if (
@@ -520,10 +587,21 @@ class Chess {
     return false;
   }
 
+  endTurn() {
+    this.turn = this.turn == "w" ? "b" : "w";
+
+    const moves = this.moves();
+    for (let x = 0; x < this.board.length; x++) {
+      for (let y = 0; y < this.board[x].length; y++) {
+        this.board[x][y]?.endOfTurn(this, moves);
+      }
+    }
+  }
+
   fenFow() {
     let fen = "";
     let emptySquares = 0;
-    let sight = this.moves("white").map((move) => {
+    let sight = this.moves(this.playerColor).map((move) => {
       return algebraicToIndex(move.to).toString();
     });
 
@@ -537,7 +615,8 @@ class Chess {
 
         if (
           piece &&
-          (piece.color === "white" || sight.includes([i, j].toString()))
+          (piece.color === this.playerColor ||
+            sight.includes([i, j].toString()))
         ) {
           if (emptySquares) {
             fen += emptySquares;
@@ -597,7 +676,7 @@ class Chess {
 
   move(from, to) {
     const isLegal = this.isLegalMove(from, to);
-    console.log(isLegal);
+
     if (isLegal) {
       const source = [8 - from.charAt(1), from.charCodeAt(0) - 97];
       const target = [8 - to.charAt(1), to.charCodeAt(0) - 97];
@@ -606,7 +685,7 @@ class Chess {
 
       if (this.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
         targetPiece.hasShield = false;
-        this.turn = this.turn == "w" ? "b" : "w";
+        this.endTurn();
         return true;
       }
 
@@ -620,7 +699,7 @@ class Chess {
 
       this.board[source[0]][source[1]] = null;
       this.board[target[0]][target[1]] = piece;
-      this.turn = this.turn == "w" ? "b" : "w";
+      this.endTurn();
     }
     return isLegal;
   }

@@ -2,18 +2,25 @@ var board = null;
 var game = new Chess(
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 );
-game.mods.push(GameTags.WRAP);
-game.mods.push(GameTags.VAMPIRE);
+//game.mods.push(GameTags.WRAP);
+//game.mods.push(GameTags.VAMPIRE);
 // game.mods.push(GameTags.BOMBERS);
 game.mods.push(GameTags.FOG);
 // game.mods.push(GameTags.HITCHANCE);
 // game.mods.push(GameTags.RELOAD);
-game.mods.push(GameTags.SHIELDS);
+//game.mods.push(GameTags.SHIELDS);
 // game.mods.push(GameTags.STAMINA);
-// game.mods.push(GameTags.WRAP);
+//game.mods.push(GameTags.LOYALTY);
 // game.mods.push(GameTags.VAMPIRE);
 // game.mods.push(GameTags.WRAP);
 // game.mods.push(GameTags.VAMPIRE);
+const info = game.getGameInfo();
+if (info) {
+  document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
+    /\n|,/g,
+    "<br>"
+  )}</p>`;
+}
 
 function onDragStart(source, piece, position, orientation) {
   // do not pick up pieces if the game is over
@@ -59,11 +66,14 @@ var blackSquareGrey = "#696969";
 function onMouseoverSquare(square, piece) {
   const info = game.getPieceInfo(square);
   if (info) {
-    document.getElementById("details").innerHTML = `<pre>${info}</pre>`;
+    document.getElementById("space-details").innerHTML = `<p>${info.replaceAll(
+      /\n|,/g,
+      "<br>"
+    )}</p>`;
   }
 
   // get list of possible moves for this square
-  var moves = game.moves(square);
+  var moves = game.moves(square, true);
 
   // exit if there are no moves available for this square
   if (moves.length === 0) return;
@@ -79,7 +89,7 @@ function onMouseoverSquare(square, piece) {
 
 function onMouseoutSquare(square, piece) {
   removeGreySquares();
-  document.getElementById("details").innerHTML = "";
+  document.getElementById("space-details").innerHTML = "";
 }
 
 function removeGreySquares() {

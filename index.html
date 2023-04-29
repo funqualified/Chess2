@@ -1,23 +1,13 @@
-<body style="background-color: #444">
+<body>
   <div style="display: flex; flex-direction: row">
-    <div
-      id="myBoard"
-      style="width: 75%; max-width: 95vh; margin: auto; display: flex"
-    ></div>
-    <div
-      id="details"
-      style="
-        justify-content: center;
-        border-radius: 20px;
-        width: 20%;
-        height: 95vh;
-        margin: auto;
-        background-color: #eee;
-        display: flex;
-      "
-    ></div>
+    <div id="myBoard" class="board"></div>
+    <div class="info-container">
+      <div id="space-details" class="info-box"></div>
+      <div id="game-details" class="info-box"></div>
+    </div>
   </div>
   <link rel="stylesheet" href="chessboard-1.0.0.css" />
+  <link rel="stylesheet" href="styles.css" />
   <script
     src="https://code.jquery.com/jquery-3.5.1.min.js"
     integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
