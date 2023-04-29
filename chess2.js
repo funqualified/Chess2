@@ -61,7 +61,6 @@ class Piece {
         this.loyalty += 1;
         moves.forEach((move) => {
           const index = algebraicToIndex(move.to);
-          console.log(game.board[index[0]][index[1]]);
           if (game.board[index[0]][index[1]] === this) {
             this.loyalty -= 2;
           }
@@ -516,28 +515,28 @@ class Chess {
     let moves = [];
 
     if (from?.length === 2) {
-      if (playerVisable && this.mods.includes(GameTags.FOG)) {
-        let sight = this.moves(this.playerColor).map((move) => {
-          return algebraicToIndex(move.to).toString();
-        });
-        const index = algebraicToIndex(from);
-        const piece = this.board[index[0]][index[1]];
-        if (
-          sight.includes(index?.toString()) ||
-          piece?.color == this.playerColor
-        ) {
-          for (let x = 0; x < this.board.length; x++) {
-            for (let y = 0; y < this.board[x].length; y++) {
-              if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
-                moves.push({
-                  from: from,
-                  to: indexToAlgebraic([x, y]),
-                });
-              }
+      let sight = this.moves(this.playerColor).map((move) => {
+        return algebraicToIndex(move.to).toString();
+      });
+      const index = algebraicToIndex(from);
+      const piece = this.board[index[0]][index[1]];
+      if (
+        !playerVisable ||
+        !this.mods.includes(GameTags.FOG) ||
+        sight.includes(index?.toString()) ||
+        piece?.color == this.playerColor
+      ) {
+        for (let x = 0; x < this.board.length; x++) {
+          for (let y = 0; y < this.board[x].length; y++) {
+            if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
+              moves.push({
+                from: from,
+                to: indexToAlgebraic([x, y]),
+              });
             }
           }
-          return moves;
         }
+        return moves;
       }
     }
 

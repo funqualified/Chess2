@@ -1,11 +1,28 @@
+<!DOCTYPE html>
 <body>
-  <div style="display: flex; flex-direction: row">
-    <div id="myBoard" class="board"></div>
-    <div class="info-container">
-      <div id="space-details" class="info-box"></div>
-      <div id="game-details" class="info-box"></div>
-    </div>
+  <div id="menu-space" class="menu">
+    <button onclick="beginSingleplayer()">Single Player</button>
+    <button onclick="hostMultiplayer()">Host Game</button>
+    <button onclick="joinMultiplayer()">Join Game</button>
+    <span>
+      <label>Wrap</label>
+      <input type="checkbox" name="mods" value="WRAP" /> </span
+    ><span>
+      <label>Vampire</label>
+      <input type="checkbox" name="mods" value="VAMPIRE" /> </span
+    ><span>
+      <label>Fog of War</label>
+      <input type="checkbox" name="mods" value="FOG" /> </span
+    ><span>
+      <label>Shield</label>
+      <input type="checkbox" name="mods" value="SHIELDS" /> </span
+    ><span>
+      <label>Loyalty</label>
+      <input type="checkbox" name="mods" value="LOYALTY" />
+    </span>
+    <input name="PeerId" value="" placeholder="enter Peer id to connect" />
   </div>
+  <div id="game-space" class="game"></div>
   <link rel="stylesheet" href="chessboard-1.0.0.css" />
   <link rel="stylesheet" href="styles.css" />
   <script
@@ -13,7 +30,9 @@
     integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
     crossorigin="anonymous"
   ></script>
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
   <script src="chessboard-1.0.0.js"></script>
   <script src="chess2.js"></script>
   <script src="game.js"></script>
+  <script src="UI.js"></script>
 </body>

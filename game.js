@@ -1,25 +1,45 @@
 var board = null;
-var game = new Chess(
-  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-);
-//game.mods.push(GameTags.WRAP);
-//game.mods.push(GameTags.VAMPIRE);
-// game.mods.push(GameTags.BOMBERS);
-game.mods.push(GameTags.FOG);
-// game.mods.push(GameTags.HITCHANCE);
-// game.mods.push(GameTags.RELOAD);
-//game.mods.push(GameTags.SHIELDS);
-// game.mods.push(GameTags.STAMINA);
-//game.mods.push(GameTags.LOYALTY);
-// game.mods.push(GameTags.VAMPIRE);
-// game.mods.push(GameTags.WRAP);
-// game.mods.push(GameTags.VAMPIRE);
-const info = game.getGameInfo();
-if (info) {
-  document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
-    /\n|,/g,
-    "<br>"
-  )}</p>`;
+var game = null;
+
+function startGame(mods = [], multiplayer = false) {
+  document.getElementById("game-space").innerHTML =
+    "<div id='myBoard' class='board'></div><div class='info-container'><div id='space-details' class='info-box'></div><div id='game-details' class='info-box'></div></div>";
+  document.getElementById("menu-space").classList.add("hide");
+  game = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  mods.forEach((element) => {
+    game.mods.push(element);
+  });
+  //game.mods.push(GameTags.WRAP);
+  //game.mods.push(GameTags.VAMPIRE);
+  // game.mods.push(GameTags.BOMBERS);
+  //game.mods.push(GameTags.FOG);
+  // game.mods.push(GameTags.HITCHANCE);
+  // game.mods.push(GameTags.RELOAD);
+  //game.mods.push(GameTags.SHIELDS);
+  // game.mods.push(GameTags.STAMINA);
+  //game.mods.push(GameTags.LOYALTY);
+  // game.mods.push(GameTags.VAMPIRE);
+  // game.mods.push(GameTags.WRAP);
+  // game.mods.push(GameTags.VAMPIRE);
+  const info = game.getGameInfo();
+  if (info) {
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
+      /\n|,/g,
+      "<br>"
+    )}</p>`;
+  }
+
+  var config = {
+    draggable: true,
+    position: game.fen(),
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd,
+    onMouseoutSquare: onMouseoutSquare,
+    onMouseoverSquare: onMouseoverSquare,
+  };
+  board = Chessboard("myBoard", config);
+  $(window).resize(board.resize);
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -112,15 +132,3 @@ function greySquare(square) {
 function onSnapEnd() {
   board.position(game.fen());
 }
-
-var config = {
-  draggable: true,
-  position: game.fen(),
-  onDragStart: onDragStart,
-  onDrop: onDrop,
-  onSnapEnd: onSnapEnd,
-  onMouseoutSquare: onMouseoutSquare,
-  onMouseoverSquare: onMouseoverSquare,
-};
-board = Chessboard("myBoard", config);
-$(window).resize(board.resize);
