@@ -19,3 +19,14 @@ function hostMultiplayer() {
 function joinMultiplayer() {
   joinGame($('input[name="PeerId"]').val());
 }
+
+function quit() {
+  board = null;
+  game = null;
+  if (multiplayer) {
+    peer.disconnect();
+  }
+  multiplayer = false;
+  document.getElementById("game-space").innerHTML = "";
+  document.getElementById("menu-space").classList.remove("hide");
+}

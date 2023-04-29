@@ -3,8 +3,7 @@ var game = null;
 var multiplayer = false;
 
 function startGame(mods = [], isMultiplayer = false, color = "white") {
-  document.getElementById("game-space").innerHTML =
-    "<div id='myBoard' class='board'></div><div class='info-container'><div id='space-details' class='info-box'></div><div id='game-details' class='info-box'></div></div>";
+  document.getElementById("game-space").classList.remove("hide");
   document.getElementById("menu-space").classList.add("hide");
   game = new Chess(
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -58,6 +57,13 @@ function makeRandomMove() {
   var randomIdx = Math.floor(Math.random() * possibleMoves.length);
   game.move(possibleMoves[randomIdx].from, possibleMoves[randomIdx].to);
   board.position(game.fen());
+  const info = game.getGameInfo();
+  if (info) {
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
+      /\n|,/g,
+      "<br>"
+    )}</p>`;
+  }
 }
 
 function onDrop(source, target) {
@@ -80,6 +86,13 @@ function onDrop(source, target) {
   // make random legal move for black
   if (!multiplayer) {
     window.setTimeout(makeRandomMove, 250);
+  }
+  const info = game.getGameInfo();
+  if (info) {
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
+      /\n|,/g,
+      "<br>"
+    )}</p>`;
   }
 }
 

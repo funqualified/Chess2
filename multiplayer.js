@@ -84,5 +84,12 @@ handeData = function (data) {
       });
     });
     board.position(game.fen());
+    const info = game.getGameInfo();
+    if (info) {
+      document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
+        /\n|,/g,
+        "<br>"
+      )}</p>`;
+    }
   }
 };

@@ -220,10 +220,10 @@ class Piece {
     if (
       (game.mods.includes(GameTags.WRAP) &&
         Math.abs(source[0] - target[0]) === 2 &&
-        Math.abs(source[1] - target[1]) === 7) ||
+        Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
       (game.mods.includes(GameTags.WRAP) &&
         Math.abs(source[0] - target[0]) === 1 &&
-        Math.abs(source[1] - target[1]) === 6)
+        Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
     ) {
       return true;
     }
@@ -508,7 +508,9 @@ class Chess {
   }
 
   getGameInfo() {
-    return `Mods\n${this.mods}`;
+    return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${
+      this.mods
+    }`;
   }
 
   moves(from, playerVisable = false) {
