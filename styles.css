@@ -9,6 +9,10 @@
   display: flex;
 }
 
+.info-box > p {
+  color: black;
+}
+
 .info-container {
   display: flex;
   margin: auto;

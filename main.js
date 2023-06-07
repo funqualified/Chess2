@@ -2,8 +2,8 @@ const { app, BrowserWindow } = require("electron");
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    minWidth: 415,
-    minHeight: 415,
+    minWidth: 1280,
+    minHeight: 720,
   });
   win.setTitle("Chess 2: Game of the Year Edition");
   win.removeMenu();
