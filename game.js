@@ -5,10 +5,7 @@ var multiplayer = false;
 function startGame(mods = [], isMultiplayer = false, color = "white") {
   document.getElementById("game-space").classList.remove("hide");
   document.getElementById("menu-space").classList.add("hide");
-  game = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", color);
-  mods.forEach((element) => {
-    game.mods.push(element);
-  });
+  game = new Chess(mods, color);
   multiplayer = isMultiplayer;
   const info = game.getGameInfo();
   if (info) {

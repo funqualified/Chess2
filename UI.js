@@ -128,4 +128,10 @@ var randomGameNames = [
   "White Chess 2",
   "The Pawn: Desolation of Chess",
   "Checking Private Ryan",
+  "Chess^2",
+  "Chess: Eternal",
+  "Chess: Arkham City",
+  "Chess 2: Among [insert piece name]",
+  "Killer Queen Chess",
+  "Chess 2 Hyperchess",
 ];

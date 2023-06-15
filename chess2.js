@@ -389,11 +389,12 @@ function indexToAlgebraic(index) {
 }
 
 class Chess {
-  constructor(fen, color = "white") {
+  constructor(mods, color = "white") {
+    this.board = [];
+    this.mods = mods;
+    var fen = this.getInitialFen();
     const rows = fen.split(" ")[0].split("/");
     this.turn = fen.split(" ")[1];
-    this.board = [];
-    this.mods = [];
     this.playerColor = color;
     this.winner = null;
 
@@ -418,6 +419,62 @@ class Chess {
       }
 
       this.board.push(row);
+    }
+  }
+
+  getInitialFen() {
+    if (this.mods.includes(GameTags.RANDOM_START)) {
+      var possitionsArr = [];
+      possitionsArr[Math.floor(Math.random() * 4) * 2] = "b";
+      possitionsArr[Math.floor(Math.random() * 4) * 2 + 1] = "b";
+
+      var i = -1;
+      var queenIndex = Math.floor(Math.random() * 6);
+      while (i < queenIndex) {
+        i++;
+        if (possitionsArr[i] != null) {
+          queenIndex++;
+        }
+      }
+      possitionsArr[i] = "q";
+
+      i = -1;
+      var knightOneIndex = Math.floor(Math.random() * 5);
+      while (i < knightOneIndex) {
+        i++;
+        if (possitionsArr[i] != null) {
+          knightOneIndex++;
+        }
+      }
+      possitionsArr[i] = "n";
+
+      i = -1;
+      var knightTwoIndex = Math.floor(Math.random() * 4);
+      while (i < knightTwoIndex) {
+        i++;
+        if (possitionsArr[i] != null) {
+          knightTwoIndex++;
+        }
+      }
+      possitionsArr[i] = "n";
+
+      var x = 2;
+      i = 0;
+      while (x >= 0) {
+        if (possitionsArr[i] == null) {
+          if (x == 2 || x == 0) {
+            possitionsArr[i] = "r";
+          } else {
+            possitionsArr[i] = "k";
+          }
+          x--;
+        }
+        i++;
+      }
+
+      return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
+    } else {
+      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
   }
 
