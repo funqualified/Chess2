@@ -120,4 +120,6 @@ var randomGameNames = [
   "Chess 2: Family Business",
   "Chess Too",
   "Top Chess: Maverick",
+  "Chess 2: Back in the Habit",
+  "White Chess 2",
 ];

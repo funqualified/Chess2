@@ -1,13 +1,13 @@
 const GameTags = {
   FOG: "You can only see spaces your pieces can move to",
-  STAMINA: "Each piece needs stamina to move",
+  //STAMINA: "Each piece needs stamina to move",
   VAMPIRE: "Pieces gain the powers of pieces they've captured",
   SHIELDS: "Pieces can have a shield that prevents capture, consumed on use",
   WRAP: "The left and right sides of the board wrap around",
   LOYALTY: "Pieces may defect to the other side",
-  HITCHANCE: "Pieces may fail to capture",
-  BOMBERS:
-    "Pieces explode after X moves, capturing themselves and adjecent spaces",
+  RANDOM_START: "Pieces will start using the Chess960 random alternate start rules",
+  //HIT_CHANCE: "Pieces may fail to capture",
+  //BOMBERS: "Pieces explode after X moves, capturing themselves and adjecent spaces",
   RELOAD: "Pawn promotion requires a quicktime minigame",
 };
 
@@ -23,11 +23,7 @@ function pieceFactory(fenId) {
     case "r":
       return new Piece(color, fenId, "Rook", ["vertical", "horizontal"]);
     case "q":
-      return new Piece(color, fenId, "Queen", [
-        "vertical",
-        "horizontal",
-        "diagonal",
-      ]);
+      return new Piece(color, fenId, "Queen", ["vertical", "horizontal", "diagonal"]);
     case "k":
       return new Piece(color, fenId, "King", ["king"], false, 100);
     default:
@@ -37,14 +33,7 @@ function pieceFactory(fenId) {
 }
 
 class Piece {
-  constructor(
-    color,
-    fenId,
-    name = fenId,
-    moveTypes = [],
-    hasShield = false,
-    loyalty = 10
-  ) {
+  constructor(color, fenId, name = fenId, moveTypes = [], hasShield = false, loyalty = 10) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
@@ -78,9 +67,7 @@ class Piece {
 
   info(game) {
     let details = "";
-    details += `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${
-      this.name
-    }\n`;
+    details += `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
     details += "Abilities:\n";
     if (game.mods.includes(GameTags.VAMPIRE)) {
       details += "Move " + this.moveTypes + "\n";
@@ -94,9 +81,7 @@ class Piece {
     return details;
   }
   fen() {
-    return this.color === "white"
-      ? this.fenId.toUpperCase()
-      : this.fenId.toLowerCase();
+    return this.color === "white" ? this.fenId.toUpperCase() : this.fenId.toLowerCase();
   }
   isLegalMove(source, target, targetPiece, game) {
     let isMoveLegal = false;
@@ -143,62 +128,42 @@ class Piece {
   pawnMove(source, target, targetPiece, game) {
     if (this.color == "white") {
       if (source[1] === target[1]) {
-        if (
-          source[0] - target[0] === 2 &&
-          source[0] === 6 &&
-          !targetPiece &&
-          !game.board[source[0] - 1][source[1]]
-        ) {
+        if (source[0] - target[0] === 2 && source[0] === 6 && !targetPiece && !game.board[source[0] - 1][source[1]]) {
           // Pawn moves 2 spaces on its first move
           return true;
         } else if (source[0] - target[0] === 1 && !targetPiece) {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (
-        Math.abs(source[1] - target[1]) === 1 &&
-        source[0] - target[0] === 1 &&
-        !!targetPiece
-      ) {
+      } else if (Math.abs(source[1] - target[1]) === 1 && source[0] - target[0] === 1 && !!targetPiece) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes(GameTags.WRAP) &&
         source[0] - target[0] === 1 &&
         !!targetPiece &&
-        ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) ||
-          (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
+        ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
       ) {
         //Pawn captures diagonally over wrap
         return true;
       }
     } else {
       if (source[1] === target[1]) {
-        if (
-          source[0] - target[0] === -2 &&
-          source[0] === 1 &&
-          !targetPiece &&
-          !game.board[source[0] + 1][source[1]]
-        ) {
+        if (source[0] - target[0] === -2 && source[0] === 1 && !targetPiece && !game.board[source[0] + 1][source[1]]) {
           // Pawn moves 2 spaces on its first move
           return true;
         } else if (source[0] - target[0] === -1 && !targetPiece) {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (
-        Math.abs(source[1] - target[1]) === 1 &&
-        source[0] - target[0] === -1 &&
-        !!targetPiece
-      ) {
+      } else if (Math.abs(source[1] - target[1]) === 1 && source[0] - target[0] === -1 && !!targetPiece) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes(GameTags.WRAP) &&
         source[0] - target[0] === -1 &&
         !!targetPiece &&
-        ((source[1] === 0 && target[1] === game.board[source[0]].length) ||
-          (source[1] === game.board[source[0]].length && target[1] === 0))
+        ((source[1] === 0 && target[1] === game.board[source[0]].length) || (source[1] === game.board[source[0]].length && target[1] === 0))
       ) {
         //Pawn captures diagonally over wrap
         return true;
@@ -209,21 +174,15 @@ class Piece {
 
   knightMove(source, target, targetPiece, game) {
     if (
-      (Math.abs(source[0] - target[0]) === 2 &&
-        Math.abs(source[1] - target[1]) === 1) ||
-      (Math.abs(source[0] - target[0]) === 1 &&
-        Math.abs(source[1] - target[1]) === 2)
+      (Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === 1) ||
+      (Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === 2)
     ) {
       // Knight moves in L shape
       return true;
     }
     if (
-      (game.mods.includes(GameTags.WRAP) &&
-        Math.abs(source[0] - target[0]) === 2 &&
-        Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
-      (game.mods.includes(GameTags.WRAP) &&
-        Math.abs(source[0] - target[0]) === 1 &&
-        Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
+      (game.mods.includes(GameTags.WRAP) && Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
+      (game.mods.includes(GameTags.WRAP) && Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
     ) {
       return true;
     }
@@ -291,8 +250,7 @@ class Piece {
       let canAccessNormal = true;
       for (
         let i = startRow + rowIncrement, j = startCol + colIncrement;
-        (rowIncrement > 0 ? i < target[1] : i > target[1]) &&
-        (colIncrement > 0 ? j < target[0] : j > target[0]);
+        (rowIncrement > 0 ? i < target[1] : i > target[1]) && (colIncrement > 0 ? j < target[0] : j > target[0]);
         i += rowIncrement, j += colIncrement
       ) {
         if (game.board[j][i]) {
@@ -305,21 +263,14 @@ class Piece {
     }
     if (
       game.mods.includes(GameTags.WRAP) &&
-      (Math.abs(source[0] - target[0] + 8) ===
-        Math.abs(source[1] - target[1]) ||
-        Math.abs(source[0] - target[0]) ===
-          Math.abs(source[1] - target[1] + 8) ||
-        Math.abs(source[0] - target[0] - 8) ===
-          Math.abs(source[1] - target[1]) ||
+      (Math.abs(source[0] - target[0] + 8) === Math.abs(source[1] - target[1]) ||
+        Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1] + 8) ||
+        Math.abs(source[0] - target[0] - 8) === Math.abs(source[1] - target[1]) ||
         Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1] - 8))
     ) {
       if (source[0] < target[0] && source[1] > target[1]) {
         //UR
-        for (
-          let x = source[0] + 1, y = source[1] + 1;
-          x != target[0] && y != target[1];
-          x++, y++
-        ) {
+        for (let x = source[0] + 1, y = source[1] + 1; x != target[0] && y != target[1]; x++, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
@@ -336,11 +287,7 @@ class Piece {
         return true;
       } else if (source[0] < target[0] && source[1] < target[1]) {
         //UL
-        for (
-          let x = source[0] + 1, y = source[1] - 1;
-          x != target[0] && y != target[1];
-          x++, y--
-        ) {
+        for (let x = source[0] + 1, y = source[1] - 1; x != target[0] && y != target[1]; x++, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
@@ -357,11 +304,7 @@ class Piece {
         return true;
       } else if (source[0] > target[0] && source[1] < target[1]) {
         //DL
-        for (
-          let x = source[0] - 1, y = source[1] - 1;
-          x != target[0] && y != target[1];
-          x--, y--
-        ) {
+        for (let x = source[0] - 1, y = source[1] - 1; x != target[0] && y != target[1]; x--, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
@@ -378,11 +321,7 @@ class Piece {
         return true;
       } else if (source[0] > target[0] && source[1] > target[1]) {
         //DR
-        for (
-          let x = source[0] - 1, y = source[1] + 1;
-          x != target[0] && y != target[1];
-          x--, y++
-        ) {
+        for (let x = source[0] - 1, y = source[1] + 1; x != target[0] && y != target[1]; x--, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
@@ -404,10 +343,7 @@ class Piece {
   }
 
   kingMove(source, target, targetPiece, game) {
-    if (
-      Math.abs(source[0] - target[0]) <= 1 &&
-      Math.abs(source[1] - target[1]) <= 1
-    ) {
+    if (Math.abs(source[0] - target[0]) <= 1 && Math.abs(source[1] - target[1]) <= 1) {
       // King moves 1 space in any direction
       return true;
     } else if (source[1] === target[1] && Math.abs(source[1] === target[1])) {
@@ -434,9 +370,7 @@ class Piece {
       }
     } else if (game.mods.includes(GameTags.WRAP)) {
       if (
-        (Math.abs(source[0] - target[0]) <= 1 &&
-          source[1] === 0 &&
-          target[1] === game.board[target[0]].length - 1) ||
+        (Math.abs(source[0] - target[0]) <= 1 && source[1] === 0 && target[1] === game.board[target[0]].length - 1) ||
         (source[1] === game.board[source[1]].length - 1 && target[1] === 0)
       ) {
         return true;
@@ -461,6 +395,7 @@ class Chess {
     this.board = [];
     this.mods = [];
     this.playerColor = color;
+    this.winner = null;
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
@@ -494,10 +429,7 @@ class Chess {
         let sight = this.moves(this.playerColor).map((move) => {
           return algebraicToIndex(move.to).toString();
         });
-        if (
-          sight.includes(index?.toString()) ||
-          piece.color == this.playerColor
-        ) {
+        if (sight.includes(index?.toString()) || piece.color == this.playerColor) {
           return piece.info(this);
         }
         return null;
@@ -508,9 +440,37 @@ class Chess {
   }
 
   getGameInfo() {
-    return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${
-      this.mods
-    }`;
+    if (this.winner == null) {
+      return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods}`;
+    } else {
+      return `The winner is ${this.winner}`;
+    }
+  }
+
+  getGameWinner() {
+    var winner = null;
+    var hasValidMove = false;
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[i].length; j++) {
+        const piece = this.board[i][j];
+        if (piece != null && piece.color.charAt(0) == this.turn) {
+          this.moves(indexToAlgebraic([i, j])).forEach((move) => {
+            var to = algebraicToIndex(move.to);
+            var target = this.board[to[0]][to[1]];
+            hasValidMove = true;
+            if (target != null && target.color != piece.color && target.fenId.toLowerCase() === "k") {
+              winner = piece.color;
+            }
+          });
+        }
+      }
+    }
+
+    if (hasValidMove == false) {
+      return this.turn == "w" ? "black" : "white";
+    }
+
+    return winner;
   }
 
   moves(from, playerVisable = false) {
@@ -522,12 +482,7 @@ class Chess {
       });
       const index = algebraicToIndex(from);
       const piece = this.board[index[0]][index[1]];
-      if (
-        !playerVisable ||
-        !this.mods.includes(GameTags.FOG) ||
-        sight.includes(index?.toString()) ||
-        piece?.color == this.playerColor
-      ) {
+      if (!playerVisable || !this.mods.includes(GameTags.FOG) || sight.includes(index?.toString()) || piece?.color == this.playerColor) {
         for (let x = 0; x < this.board.length; x++) {
           for (let y = 0; y < this.board[x].length; y++) {
             if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
@@ -548,12 +503,7 @@ class Chess {
         if (!!piece && (from === "" || !from || from === piece.color)) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
-              if (
-                this.isLegalMove(
-                  indexToAlgebraic([i, j]),
-                  indexToAlgebraic([x, y])
-                )
-              ) {
+              if (this.isLegalMove(indexToAlgebraic([i, j]), indexToAlgebraic([x, y]))) {
                 moves.push({
                   from: indexToAlgebraic([i, j]),
                   to: indexToAlgebraic([x, y]),
@@ -585,11 +535,16 @@ class Chess {
   }
 
   game_over() {
-    return false;
+    return this.winner != null;
   }
 
   endTurn() {
     this.turn = this.turn == "w" ? "b" : "w";
+
+    this.winner = this.getGameWinner();
+    if (this.winner != null) {
+      return;
+    }
 
     const moves = this.moves();
     for (let x = 0; x < this.board.length; x++) {
@@ -614,11 +569,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
 
-        if (
-          piece &&
-          (piece.color === this.playerColor ||
-            sight.includes([i, j].toString()))
-        ) {
+        if (piece && (piece.color === this.playerColor || sight.includes([i, j].toString()))) {
           if (emptySquares) {
             fen += emptySquares;
             emptySquares = 0;
