@@ -5,20 +5,14 @@ var multiplayer = false;
 function startGame(mods = [], isMultiplayer = false, color = "white") {
   document.getElementById("game-space").classList.remove("hide");
   document.getElementById("menu-space").classList.add("hide");
-  game = new Chess(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    color
-  );
+  game = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", color);
   mods.forEach((element) => {
     game.mods.push(element);
   });
   multiplayer = isMultiplayer;
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
-      /\n|,/g,
-      "<br>"
-    )}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
   }
 
   var config = {
@@ -59,10 +53,7 @@ function makeRandomMove() {
   board.position(game.fen());
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
-      /\n|,/g,
-      "<br>"
-    )}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
   }
 }
 
@@ -89,10 +80,7 @@ function onDrop(source, target) {
   }
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
-      /\n|,/g,
-      "<br>"
-    )}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
   }
 }
 
@@ -102,12 +90,18 @@ var blackSquareGrey = "#696969";
 function onMouseoverSquare(square, piece) {
   const info = game.getPieceInfo(square);
   if (info) {
-    document.getElementById("space-details").innerHTML = `<p>${info.replaceAll(
-      /\n|,/g,
-      "<br>"
-    )}</p>`;
+    document.getElementById("space-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
   }
 
+  greySquareMoves(square);
+}
+
+function onMouseoutSquare(square, piece) {
+  removeGreySquares();
+  document.getElementById("space-details").innerHTML = "";
+}
+
+function greySquareMoves(square) {
   // get list of possible moves for this square
   var moves = game.moves(square, true);
 
@@ -121,11 +115,6 @@ function onMouseoverSquare(square, piece) {
   for (var i = 0; i < moves.length; i++) {
     greySquare(moves[i].to);
   }
-}
-
-function onMouseoutSquare(square, piece) {
-  removeGreySquares();
-  document.getElementById("space-details").innerHTML = "";
 }
 
 function removeGreySquares() {
