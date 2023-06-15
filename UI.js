@@ -33,6 +33,10 @@ window.onload = function () {
 
   if (Math.random() < 0.5) {
     var randomGameName = randomGameNames[Math.floor(Math.random() * randomGameNames.length)];
+    if (randomGameName.includes("[insert piece name]")) {
+      var pieceName = randomPieceNames[Math.floor(Math.random() * randomPieceNames.length)];
+      randomGameName = randomGameName.replace("[insert piece name]", pieceName);
+    }
     document.getElementById("game-title").innerHTML = randomGameName;
   }
 };
@@ -60,6 +64,8 @@ function convertToCapitalCase(str) {
 
   return str;
 }
+
+var randomPieceNames = ["Pawn", "Rook", "Bishop", "Knight", "Queen", "King"];
 
 var randomGameNames = [
   "Chess Revelations",
