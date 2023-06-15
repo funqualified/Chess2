@@ -6,6 +6,7 @@ function hostGame() {
   peer = new Peer();
   peer.on("open", function (id) {
     console.log("My peer ID is: " + id);
+    window.alert("My peer ID is: " + id);
     navigator.clipboard.writeText(id);
     startGame(mods, true);
   });
@@ -73,23 +74,13 @@ handeData = function (data) {
         if (!p) {
           return null;
         }
-        return new Piece(
-          p.color,
-          p.fenId,
-          p.name,
-          p.moveTypes,
-          p.hasShield,
-          p.loyalty
-        );
+        return new Piece(p.color, p.fenId, p.name, p.moveTypes, p.hasShield, p.loyalty);
       });
     });
     board.position(game.fen());
     const info = game.getGameInfo();
     if (info) {
-      document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(
-        /\n|,/g,
-        "<br>"
-      )}</p>`;
+      document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
     }
   }
 };
