@@ -36,13 +36,6 @@
   justify-content: center;
 }
 
-h1 {
-  font-size: 72px;
-  background: -webkit-radial-gradient(50% 50%, farthest-corner, #ffc, #ffd700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
 p {
   color: #eee;
   margin-bottom: 0;
@@ -90,4 +83,51 @@ input[type="checkbox"] {
 
 body {
   background-color: #444;
+}
+
+h1 {
+  font-size: 72px;
+  background: -webkit-radial-gradient(50% 50%, farthest-corner, #ffc, #ffd700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#menu-space {
+  padding-top: 90px;
+}
+
+#game-title {
+  position: absolute;
+  top: 20px;
+}
+
+.bounce-title {
+  animation: bouncy 3s infinite linear;
+}
+
+@keyframes bouncy {
+  0% {
+    padding-top: 0px;
+  }
+  8% {
+    transform: rotate(1deg);
+  }
+  20% {
+    padding-top: 10px;
+  }
+  23% {
+    transform: rotate(-1deg);
+  }
+  30% {
+    padding-top: 0px;
+    transform: rotate(0deg);
+  }
+  38% {
+    padding-top: 0px;
+  }
+
+  50% {
+    background-position: 150% center;
+  }
 }

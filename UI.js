@@ -39,6 +39,10 @@ window.onload = function () {
     }
     document.getElementById("game-title").innerHTML = randomGameName;
   }
+
+  if (Math.random() < 0.1) {
+    document.getElementById("game-title").classList.add("bounce-title");
+  }
 };
 
 function quit() {
@@ -122,4 +126,6 @@ var randomGameNames = [
   "Top Chess: Maverick",
   "Chess 2: Back in the Habit",
   "White Chess 2",
+  "The Pawn: Desolation of Chess",
+  "Checking Private Ryan",
 ];
