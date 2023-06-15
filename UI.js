@@ -42,14 +42,7 @@ window.onload = function () {
 };
 
 function quit() {
-  board = null;
-  game = null;
-  if (multiplayer) {
-    peer.disconnect();
-  }
-  multiplayer = false;
-  document.getElementById("game-space").innerHTML = "";
-  document.getElementById("menu-space").classList.remove("hide");
+  location.reload();
 }
 
 //Helpers
@@ -124,4 +117,7 @@ var randomGameNames = [
   "Chess 2: The Mysterious Island",
   "The Chess Supremacy",
   "Chezz II Men",
+  "Chess 2: Family Business",
+  "Chess Too",
+  "Top Chess: Maverick",
 ];
