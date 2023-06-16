@@ -6,6 +6,7 @@ const GameTags = {
   WRAP: "The left and right sides of the board wrap around",
   LOYALTY: "Pieces may defect to the other side",
   RANDOM_START: "Pieces will start using the Chess960 random alternate start rules",
+  ELIMINATION: "All enemy pieces must be eliminated to win, having no legal moves skips your turn",
   //HIT_CHANCE: "Pieces may fail to capture",
   //BOMBERS: "Pieces explode after X moves, capturing themselves and adjecent spaces",
   RELOAD: "Pawn promotion requires a quicktime minigame",
@@ -505,6 +506,39 @@ class Chess {
   }
 
   getGameWinner() {
+    if (this.mods.includes(GameTags.ELIMINATION)) {
+      var hasValidMove = false;
+      var whiteHasPieces = false;
+      var blackHasPieces = false;
+      for (let i = 0; i < this.board.length; i++) {
+        for (let j = 0; j < this.board[i].length; j++) {
+          const piece = this.board[i][j];
+          if (piece != null) {
+            if (piece.color.charAt(0) == this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
+              hasValidMove = true;
+            }
+            if (piece.color.charAt(0) == "w") {
+              whiteHasPieces = true;
+            } else {
+              blackHasPieces = true;
+            }
+          }
+        }
+      }
+      //TODO: Doesn't matter now, but in the future, there could be an edge case where white and black lose all pieces at the same time
+      // Come to think of it, I may need to add draws as a result for the normal win detector.
+      if (!whiteHasPieces) {
+        return "black";
+      }
+      if (!blackHasPieces) {
+        return "white";
+      }
+      if (!hasValidMove) {
+        this.turn = this.turn == "w" ? "b" : "w";
+      }
+      return null;
+    }
+
     var winner = null;
     var hasValidMove = false;
     for (let i = 0; i < this.board.length; i++) {

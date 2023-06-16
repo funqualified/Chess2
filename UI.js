@@ -134,4 +134,5 @@ var randomGameNames = [
   "Chess 2: Among [insert piece name]",
   "Killer Queen Chess",
   "Chess 2 Hyperchess",
+  "Chess <i>Two</i> ",
 ];

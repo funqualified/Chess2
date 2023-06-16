@@ -81,7 +81,15 @@ input[type="checkbox"] {
   display: flex;
 }
 
+#mod-selector {
+  height: 50%;
+  flex-direction: column;
+  display: flex;
+  flex-wrap: wrap;
+}
+
 body {
+  max-height: 100vh;
   background-color: #444;
 }
 
@@ -94,7 +102,7 @@ h1 {
 }
 
 #menu-space {
-  padding-top: 90px;
+  padding-top: 30vh;
 }
 
 #game-title {
