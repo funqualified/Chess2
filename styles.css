@@ -29,7 +29,8 @@
 }
 
 .menu {
-  height: 95vh;
+  height: 55vh;
+  padding-top: 40vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,6 +87,8 @@ input[type="checkbox"] {
   flex-direction: column;
   display: flex;
   flex-wrap: wrap;
+
+  align-content: space-between;
 }
 
 body {
@@ -99,19 +102,66 @@ h1 {
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-}
 
-#menu-space {
-  padding-top: 30vh;
-}
-
-#game-title {
   position: absolute;
   top: 20px;
 }
 
 .bounce-title {
   animation: bouncy 3s infinite linear;
+}
+
+.shake-title {
+  animation: shaky 1s infinite linear;
+}
+
+.shine-title {
+  animation: shiny 5s infinite linear;
+}
+
+.bounce-title.shake-title {
+  animation: bouncy 3s infinite linear, shaky 1s infinite linear;
+}
+
+.bounce-title.shine-title {
+  animation: shiny 5s infinite linear, bouncy 3s infinite linear;
+}
+
+.shake-title.shine-title {
+  animation: shiny 3s infinite linear, shaky 1s infinite linear;
+}
+
+.shake-title.shine-title.bounce-title {
+  animation: bouncy 3s infinite linear, shaky 1s infinite linear, shiny 5s infinite linear;
+}
+
+.tiny-title {
+  font-size: 8px;
+}
+
+.red-title {
+  background: -webkit-radial-gradient(50% 50%, farthest-corner, black, red);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes shiny {
+  50% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes shaky {
+  25% {
+    margin-left: 50px;
+    margin-right: 0;
+  }
+
+  75% {
+    margin-right: 50px;
+    margin-left: 0;
+  }
 }
 
 @keyframes bouncy {
@@ -133,9 +183,5 @@ h1 {
   }
   38% {
     padding-top: 0px;
-  }
-
-  50% {
-    background-position: 150% center;
   }
 }

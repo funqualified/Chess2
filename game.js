@@ -9,7 +9,7 @@ function startGame(mods = [], isMultiplayer = false, color = "white") {
   multiplayer = isMultiplayer;
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n/g, "<br>")}</p>`;
   }
 
   var config = {
@@ -50,7 +50,7 @@ function makeRandomMove() {
   board.position(game.fen());
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n/g, "<br>")}</p>`;
   }
 }
 
@@ -77,7 +77,7 @@ function onDrop(source, target) {
   }
   const info = game.getGameInfo();
   if (info) {
-    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
+    document.getElementById("game-details").innerHTML = `<p>${info.replaceAll(/\n/g, "<br>")}</p>`;
   }
 }
 
@@ -87,7 +87,7 @@ var blackSquareGrey = "#696969";
 function onMouseoverSquare(square, piece) {
   const info = game.getPieceInfo(square);
   if (info) {
-    document.getElementById("space-details").innerHTML = `<p>${info.replaceAll(/\n|,/g, "<br>")}</p>`;
+    document.getElementById("space-details").innerHTML = `<p>${info.replaceAll(/\n/g, "<br>")}</p>`;
   }
 
   greySquareMoves(square);

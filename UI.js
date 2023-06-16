@@ -40,8 +40,20 @@ window.onload = function () {
     document.getElementById("game-title").innerHTML = randomGameName;
   }
 
-  if (Math.random() < 0.1) {
+  if (Math.random() < 0.01) {
     document.getElementById("game-title").classList.add("bounce-title");
+  }
+  if (Math.random() < 0.005) {
+    document.getElementById("game-title").classList.add("shake-title");
+  }
+  if (Math.random() < 0.33) {
+    document.getElementById("game-title").classList.add("shine-title");
+  }
+  if (Math.random() < 0.1) {
+    document.getElementById("game-title").classList.add("tiny-title");
+  }
+  if (Math.random() < 0.1) {
+    document.getElementById("game-title").classList.add("red-title");
   }
 };
 

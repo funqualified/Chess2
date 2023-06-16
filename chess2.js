@@ -499,7 +499,7 @@ class Chess {
 
   getGameInfo() {
     if (this.winner == null) {
-      return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods}`;
+      return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods.join("\n")}`;
     } else {
       return `The winner is ${this.winner}`;
     }
