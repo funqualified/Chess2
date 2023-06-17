@@ -525,7 +525,7 @@ class Chess {
 
       return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
     } else {
-      return "8/7P/8/8/8/8/p2PPPPP/3QKBNR w KQkq - 0 1"; //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
   }
 
