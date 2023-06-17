@@ -38,21 +38,23 @@ window.onload = function () {
       randomGameName = randomGameName.replace("[insert piece name]", pieceName);
     }
     document.getElementById("game-title").innerHTML = randomGameName;
+  } else {
+    document.getElementById("game-title").innerHTML = "Chess 2: Game of the Year Edition";
   }
 
-  if (Math.random() < 0.01) {
+  if (Math.random() < 0.02) {
     document.getElementById("game-title").classList.add("bounce-title");
   }
-  if (Math.random() < 0.005) {
+  if (Math.random() < 0.01) {
     document.getElementById("game-title").classList.add("shake-title");
   }
-  if (Math.random() < 0.33) {
+  if (Math.random() < 0.66) {
     document.getElementById("game-title").classList.add("shine-title");
   }
   if (Math.random() < 0.1) {
     document.getElementById("game-title").classList.add("tiny-title");
   }
-  if (Math.random() < 0.1) {
+  if (Math.random() < 0.2) {
     document.getElementById("game-title").classList.add("red-title");
   }
 };
@@ -147,4 +149,5 @@ var randomGameNames = [
   "Killer Queen Chess",
   "Chess 2 Hyperchess",
   "Chess <i>Two</i> ",
+  "Chess II: Game of the Year Edition",
 ];

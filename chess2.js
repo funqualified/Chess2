@@ -16,7 +16,7 @@ function pieceFactory(fenId) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
-      return new Piece(color, fenId, "Pawn", ["pawn"], true);
+      return new Piece(color, fenId, "Pawn", ["pawn"], true, true);
     case "b":
       return new Piece(color, fenId, "Bishop", ["diagonal"]);
     case "n":
@@ -34,16 +34,28 @@ function pieceFactory(fenId) {
 }
 
 class Piece {
-  constructor(color, fenId, name = fenId, moveTypes = [], hasShield = false, loyalty = 10) {
+  constructor(color, fenId, name = fenId, moveTypes = [], hasShield = false, canPromote = false, loyalty = 10) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
     this.name = name;
     this.loyalty = loyalty;
+    this.canPromote = canPromote;
   }
 
-  endOfTurn(game, moves) {
+  getIndex(board) {
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        if (board[i][j] === this) {
+          return [i, j];
+        }
+      }
+    }
+    return null; // Object not found in the array
+  }
+
+  async endOfTurn(game, moves) {
     if (game.mods.includes(GameTags.LOYALTY)) {
       if (this.fenId.toLowerCase() === "k") {
         this.loyalty = 100;
@@ -63,6 +75,17 @@ class Piece {
         this.loyalty = Math.abs(this.loyalty);
         this.color = this.color == "white" ? "black" : "white";
       }
+    }
+
+    var index = this.getIndex(game.board);
+    if ((this.canPromote && this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7)) {
+      var fen = await gameplayUIManager.choiceUI([
+        { label: "Queen", response: "q" },
+        { label: "Rook", response: "r" },
+        { label: "Bishop", response: "b" },
+        { label: "Knight", response: "n" },
+      ]);
+      game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
     }
   }
 
@@ -475,7 +498,7 @@ class Chess {
 
       return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
     } else {
-      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      return "pppppp2/7P/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
   }
 
@@ -629,7 +652,7 @@ class Chess {
     return this.winner != null;
   }
 
-  endTurn() {
+  async endTurn() {
     this.turn = this.turn == "w" ? "b" : "w";
 
     this.winner = this.getGameWinner();
@@ -640,7 +663,7 @@ class Chess {
     const moves = this.moves();
     for (let x = 0; x < this.board.length; x++) {
       for (let y = 0; y < this.board[x].length; y++) {
-        this.board[x][y]?.endOfTurn(this, moves);
+        await this.board[x][y]?.endOfTurn(this, moves);
       }
     }
   }
@@ -717,7 +740,7 @@ class Chess {
     return fen;
   }
 
-  move(from, to) {
+  async move(from, to) {
     const isLegal = this.isLegalMove(from, to);
 
     if (isLegal) {
@@ -728,7 +751,7 @@ class Chess {
 
       if (this.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
         targetPiece.hasShield = false;
-        this.endTurn();
+        await this.endTurn();
         return true;
       }
 
@@ -742,7 +765,7 @@ class Chess {
 
       this.board[source[0]][source[1]] = null;
       this.board[target[0]][target[1]] = piece;
-      this.endTurn();
+      await this.endTurn();
     }
     return isLegal;
   }

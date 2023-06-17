@@ -54,7 +54,7 @@ function makeRandomMove() {
   }
 }
 
-function onDrop(source, target) {
+async function onDrop(source, target) {
   removeGreySquares();
 
   // see if the move is legal
@@ -62,7 +62,7 @@ function onDrop(source, target) {
     return "snapback";
   }
 
-  var move = game.move(source, target);
+  var move = await game.move(source, target);
 
   // illegal move
   if (!move) {
