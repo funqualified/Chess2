@@ -78,7 +78,7 @@ handeData = function (data) {
         if (!p) {
           return null;
         }
-        return new Piece(p.color, p.fenId, p.name, p.moveTypes, p.hasShield, p.loyalty);
+        return new Piece(p.color, p.fenId, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
       });
     });
     board.position(game.fen());
