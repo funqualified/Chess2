@@ -26,6 +26,38 @@ class GameplayUI {
       });
     });
   }
+
+  async QTUI() {
+    return new Promise((resolve) => {
+      const QTContainer = document.createElement("div");
+      QTContainer.classList.add("popup-ui");
+      QTContainer.innerHTML = `
+    <input type="range" value="1" min="1" max="100" id="qt-slider" disabled>
+    <button id="qt-button">PROMOTE!</button>
+    `;
+      document.body.appendChild(QTContainer);
+
+      const handleClick = (event) => {
+        clearInterval(interval);
+        resolve(Math.abs(document.getElementById("qt-slider").value - 50));
+        QTContainer.remove();
+      };
+
+      function increaseRangeValue() {
+        if (document.getElementById("qt-slider").value < 100) {
+          document.getElementById("qt-slider").value++;
+        } else {
+          clearInterval(interval);
+          QTContainer.remove();
+          resolve(100);
+        }
+      }
+
+      const interval = setInterval(increaseRangeValue, 10);
+
+      document.getElementById("qt-button").addEventListener("click", handleClick);
+    });
+  }
 }
 
 gameplayUIManager = new GameplayUI();

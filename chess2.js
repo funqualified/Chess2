@@ -78,14 +78,33 @@ class Piece {
     }
 
     var index = this.getIndex(game.board);
-    if ((this.canPromote && this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7)) {
-      var fen = await gameplayUIManager.choiceUI([
-        { label: "Queen", response: "q" },
-        { label: "Rook", response: "r" },
-        { label: "Bishop", response: "b" },
-        { label: "Knight", response: "n" },
-      ]);
-      game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+    if (this.canPromote && ((this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7))) {
+      if (game.mods.includes(GameTags.RELOAD)) {
+        var value = await gameplayUIManager.QTUI();
+        var fen = null;
+        if (value < 10) {
+          fen = "q";
+        } else if (value < 20) {
+          fen = "n";
+        } else if (value < 35) {
+          fen = "b";
+        } else if (value < 50) {
+          fen = "r";
+        }
+        if (fen == null) {
+          game.board[index[0]][index[1]] = null;
+        } else {
+          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+        }
+      } else {
+        var fen = await gameplayUIManager.choiceUI([
+          { label: "Queen", response: "q" },
+          { label: "Rook", response: "r" },
+          { label: "Bishop", response: "b" },
+          { label: "Knight", response: "n" },
+        ]);
+        game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+      }
     }
   }
 
