@@ -39,14 +39,14 @@ function onDragStart(source, piece, position, orientation) {
   }
 }
 
-function makeRandomMove() {
+async function makeRandomMove() {
   var possibleMoves = game.moves("black");
 
   // game over
   if (possibleMoves.length === 0) return;
 
   var randomIdx = Math.floor(Math.random() * possibleMoves.length);
-  game.move(possibleMoves[randomIdx].from, possibleMoves[randomIdx].to);
+  await game.move(possibleMoves[randomIdx].from, possibleMoves[randomIdx].to);
   board.position(game.fen());
   const info = game.getGameInfo();
   if (info) {
@@ -63,6 +63,7 @@ async function onDrop(source, target) {
   }
 
   var move = await game.move(source, target);
+  board.position(game.fen());
 
   // illegal move
   if (!move) {
@@ -72,7 +73,7 @@ async function onDrop(source, target) {
   }
 
   // make random legal move for black
-  if (!multiplayer) {
+  if (!multiplayer && !game.game_over()) {
     window.setTimeout(makeRandomMove, 250);
   }
   const info = game.getGameInfo();

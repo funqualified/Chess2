@@ -80,7 +80,11 @@ class Piece {
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7))) {
       if (game.mods.includes(GameTags.RELOAD)) {
-        var value = await gameplayUIManager.QTUI();
+        if (this.color != game.playerColor) {
+          var value = Math.random() * 51;
+        } else {
+          var value = await gameplayUIManager.QTUI();
+        }
         var fen = null;
         if (value < 10) {
           fen = "q";
@@ -97,13 +101,17 @@ class Piece {
           game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       } else {
-        var fen = await gameplayUIManager.choiceUI([
-          { label: "Queen", response: "q" },
-          { label: "Rook", response: "r" },
-          { label: "Bishop", response: "b" },
-          { label: "Knight", response: "n" },
-        ]);
-        game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+        if (this.color != game.playerColor) {
+          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? "q".toUpperCase() : "q".toLowerCase());
+        } else {
+          var fen = await gameplayUIManager.choiceUI([
+            { label: "Queen", response: "q" },
+            { label: "Rook", response: "r" },
+            { label: "Bishop", response: "b" },
+            { label: "Knight", response: "n" },
+          ]);
+          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+        }
       }
     }
   }
@@ -517,7 +525,7 @@ class Chess {
 
       return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
     } else {
-      return "pppppp2/7P/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"; //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      return "8/7P/8/8/8/8/p2PPPPP/3QKBNR w KQkq - 0 1"; //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
   }
 
