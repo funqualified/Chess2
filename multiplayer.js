@@ -68,6 +68,10 @@ handeData = function (data) {
     game.turn = data.turn;
   }
 
+  if (data.hasOwnProperty("winner")) {
+    game.winner = data.winner;
+  }
+
   if (data.hasOwnProperty("board")) {
     game.board = data.board.map(function (innerArr) {
       return innerArr.map(function (p) {

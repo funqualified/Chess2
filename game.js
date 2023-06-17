@@ -69,7 +69,7 @@ async function onDrop(source, target) {
   if (!move) {
     return "snapback";
   } else if (multiplayer && peerIsConnected) {
-    conn.send({ board: game.board, turn: game.turn });
+    conn.send({ board: game.board, turn: game.turn, winner: game.winner });
   }
 
   // make random legal move for black
