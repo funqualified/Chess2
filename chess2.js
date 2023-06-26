@@ -214,7 +214,7 @@ class Piece {
         game.mods.includes(GameTags.WRAP) &&
         source[0] - target[0] === -1 &&
         !!targetPiece &&
-        ((source[1] === 0 && target[1] === game.board[source[0]].length) || (source[1] === game.board[source[0]].length && target[1] === 0))
+        ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
       ) {
         //Pawn captures diagonally over wrap
         return true;
@@ -525,7 +525,7 @@ class Chess {
 
       return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
     } else {
-      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
     }
   }
 
