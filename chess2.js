@@ -9,7 +9,7 @@ const GameTags = {
   ELIMINATION: "All enemy pieces must be eliminated to win, having no legal moves skips your turn",
   //HIT_CHANCE: "Pieces may fail to capture",
   //BOMBERS: "Pieces explode after X moves, capturing themselves and adjecent spaces",
-  RELOAD: "Pawn promotion requires a quicktime minigame",
+  QTE_PROMOTION: "Pawn promotion requires a quicktime minigame",
 };
 
 function pieceFactory(fenId) {
@@ -79,7 +79,7 @@ class Piece {
 
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7))) {
-      if (game.mods.includes(GameTags.RELOAD)) {
+      if (game.mods.includes(GameTags.QTE_PROMOTION)) {
         if (this.color != game.playerColor) {
           var value = Math.random() * 51;
         } else {

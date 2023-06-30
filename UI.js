@@ -25,7 +25,7 @@ window.onload = function () {
   section.innerHTML = "";
   Object.keys(GameTags).forEach((mod) => {
     const span = document.createElement("span");
-    span.innerHTML = `<label>${convertToCapitalCase(mod)}</label><input type='checkbox' name='mods' value='${mod}' />`;
+    span.innerHTML = `<input type='checkbox' name='mods' value='${mod}' /> <label> ${convertToCapitalCase(mod)}</label>`;
     span.setAttribute("title", GameTags[mod]);
     section.appendChild(span);
     section.appendChild(document.createElement("br"));
