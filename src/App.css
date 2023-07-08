@@ -10,6 +10,7 @@
 }
 
 .info-box > p {
+  white-space: pre-line;
   color: black;
 }
 

@@ -60,4 +60,13 @@ class GameplayUI {
   }
 }
 
-gameplayUIManager = new GameplayUI();
+let instance = new GameplayUI();
+
+function getGamplayUI() {
+  if (!instance) {
+    instance = new GameplayUI();
+  }
+  return instance;
+}
+
+export default getGamplayUI;

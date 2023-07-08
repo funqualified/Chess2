@@ -1,3 +1,5 @@
+import gameplayUIManager from "./gameplayUI";
+
 const GameTags = {
   FOG: "You can only see spaces your pieces can move to",
   //STAMINA: "Each piece needs stamina to move",
@@ -73,17 +75,17 @@ class Piece {
       }
       if (this.loyalty < 0) {
         this.loyalty = Math.abs(this.loyalty);
-        this.color = this.color == "white" ? "black" : "white";
+        this.color = this.color === "white" ? "black" : "white";
       }
     }
 
     var index = this.getIndex(game.board);
-    if (this.canPromote && ((this.color == "white" && index[0] == 0) || (this.color == "black" && index[0] == 7))) {
+    if (this.canPromote && ((this.color === "white" && index[0] === 0) || (this.color === "black" && index[0] === 7))) {
       if (game.mods.includes(GameTags.QTE_PROMOTION)) {
-        if (this.color != game.playerColor) {
+        if (this.color !== game.playerColor) {
           var value = Math.random() * 51;
         } else {
-          var value = await gameplayUIManager.QTUI();
+          var value = await gameplayUIManager().QTUI();
         }
         var fen = null;
         if (value < 10) {
@@ -95,22 +97,22 @@ class Piece {
         } else if (value < 50) {
           fen = "r";
         }
-        if (fen == null) {
+        if (fen === null) {
           game.board[index[0]][index[1]] = null;
         } else {
-          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       } else {
-        if (this.color != game.playerColor) {
-          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? "q".toUpperCase() : "q".toLowerCase());
+        if (this.color !== game.playerColor) {
+          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
-          var fen = await gameplayUIManager.choiceUI([
+          var fen = await gameplayUIManager().choiceUI([
             { label: "Queen", response: "q" },
             { label: "Rook", response: "r" },
             { label: "Bishop", response: "b" },
             { label: "Knight", response: "n" },
           ]);
-          game.board[index[0]][index[1]] = pieceFactory(this.color == "white" ? fen.toUpperCase() : fen.toLowerCase());
+          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       }
     }
@@ -177,7 +179,7 @@ class Piece {
   }
 
   pawnMove(source, target, targetPiece, game) {
-    if (this.color == "white") {
+    if (this.color === "white") {
       if (source[1] === target[1]) {
         if (source[0] - target[0] === 2 && source[0] === 6 && !targetPiece && !game.board[source[0] - 1][source[1]]) {
           // Pawn moves 2 spaces on its first move
@@ -247,10 +249,10 @@ class Piece {
       for (let i = minRow + 1; i < maxRow; i++) {
         if (game.board[source[0]][i]) {
           if (game.mods.includes(GameTags.WRAP)) {
-            for (let o = maxRow + 1; o != minRow; o++) {
+            for (let o = maxRow + 1; o !== minRow; o++) {
               if (o >= game.board[source[0]].length) {
                 o = 0;
-                if (minRow == o) {
+                if (minRow === o) {
                   return true;
                 }
               }
@@ -321,13 +323,13 @@ class Piece {
     ) {
       if (source[0] < target[0] && source[1] > target[1]) {
         //UR
-        for (let x = source[0] + 1, y = source[1] + 1; x != target[0] && y != target[1]; x++, y++) {
+        for (let x = source[0] + 1, y = source[1] + 1; x !== target[0] && y !== target[1]; x++, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y >= game.board[source[0]].length) {
             y = 0;
-            if (x == target[0] && y == target[1]) {
+            if (x === target[0] && y === target[1]) {
               return true;
             }
           }
@@ -338,13 +340,13 @@ class Piece {
         return true;
       } else if (source[0] < target[0] && source[1] < target[1]) {
         //UL
-        for (let x = source[0] + 1, y = source[1] - 1; x != target[0] && y != target[1]; x++, y--) {
+        for (let x = source[0] + 1, y = source[1] - 1; x !== target[0] && y !== target[1]; x++, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y < 0) {
             y = game.board[source[0]].length - 1;
-            if (x == target[0] && y == target[1]) {
+            if (x === target[0] && y === target[1]) {
               return true;
             }
           }
@@ -355,13 +357,13 @@ class Piece {
         return true;
       } else if (source[0] > target[0] && source[1] < target[1]) {
         //DL
-        for (let x = source[0] - 1, y = source[1] - 1; x != target[0] && y != target[1]; x--, y--) {
+        for (let x = source[0] - 1, y = source[1] - 1; x !== target[0] && y !== target[1]; x--, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y < 0) {
             y = game.board[source[0]].length - 1;
-            if (x == target[0] && y == target[1]) {
+            if (x === target[0] && y === target[1]) {
               return true;
             }
           }
@@ -372,13 +374,13 @@ class Piece {
         return true;
       } else if (source[0] > target[0] && source[1] > target[1]) {
         //DR
-        for (let x = source[0] - 1, y = source[1] + 1; x != target[0] && y != target[1]; x--, y++) {
+        for (let x = source[0] - 1, y = source[1] + 1; x !== target[0] && y !== target[1]; x--, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y >= game.board[source[0]].length) {
             y = 0;
-            if (x == target[0] && y == target[1]) {
+            if (x === target[0] && y === target[1]) {
               return true;
             }
           }
@@ -413,7 +415,7 @@ class Piece {
         source[1] === target[1] &&
         game.board[source[1]][source[0]] === "k" &&
         game.board[source[1]][0] === "r" &&
-        !board[source[1]][1] &&
+        !game.board[source[1]][1] &&
         !game.board[source[1]][2] &&
         !game.board[source[1]][3]
       ) {
@@ -440,7 +442,11 @@ function indexToAlgebraic(index) {
 }
 
 class Chess {
-  constructor(mods, color = "white") {
+  constructor() {
+    this.initialized = false;
+  }
+
+  init(mods, color = "white") {
     this.board = [];
     this.mods = mods;
     var fen = this.getInitialFen();
@@ -448,6 +454,7 @@ class Chess {
     this.turn = fen.split(" ")[1];
     this.playerColor = color;
     this.winner = null;
+    this.initialized = true;
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
@@ -475,7 +482,7 @@ class Chess {
 
   getInitialFen() {
     if (this.mods.includes(GameTags.RANDOM_START)) {
-      var possitionsArr = [];
+      var possitionsArr = [null, null, null, null, null, null, null, null];
       possitionsArr[Math.floor(Math.random() * 4) * 2] = "b";
       possitionsArr[Math.floor(Math.random() * 4) * 2 + 1] = "b";
 
@@ -483,7 +490,7 @@ class Chess {
       var queenIndex = Math.floor(Math.random() * 6);
       while (i < queenIndex) {
         i++;
-        if (possitionsArr[i] != null) {
+        if (possitionsArr[i] !== null) {
           queenIndex++;
         }
       }
@@ -493,7 +500,7 @@ class Chess {
       var knightOneIndex = Math.floor(Math.random() * 5);
       while (i < knightOneIndex) {
         i++;
-        if (possitionsArr[i] != null) {
+        if (possitionsArr[i] !== null) {
           knightOneIndex++;
         }
       }
@@ -503,7 +510,7 @@ class Chess {
       var knightTwoIndex = Math.floor(Math.random() * 4);
       while (i < knightTwoIndex) {
         i++;
-        if (possitionsArr[i] != null) {
+        if (possitionsArr[i] !== null) {
           knightTwoIndex++;
         }
       }
@@ -512,8 +519,8 @@ class Chess {
       var x = 2;
       i = 0;
       while (x >= 0) {
-        if (possitionsArr[i] == null) {
-          if (x == 2 || x == 0) {
+        if (possitionsArr[i] === null) {
+          if (x === 2 || x === 0) {
             possitionsArr[i] = "r";
           } else {
             possitionsArr[i] = "k";
@@ -525,7 +532,7 @@ class Chess {
 
       return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
     } else {
-      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1";
+      return "rnbqk3/pppp3P/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
   }
 
@@ -537,7 +544,7 @@ class Chess {
         let sight = this.moves(this.playerColor).map((move) => {
           return algebraicToIndex(move.to).toString();
         });
-        if (sight.includes(index?.toString()) || piece.color == this.playerColor) {
+        if (sight.includes(index?.toString()) || piece.color === this.playerColor) {
           return piece.info(this);
         }
         return null;
@@ -548,7 +555,7 @@ class Chess {
   }
 
   getGameInfo() {
-    if (this.winner == null) {
+    if (this.winner === null) {
       return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods.join("\n")}`;
     } else {
       return `The winner is ${this.winner}`;
@@ -563,11 +570,11 @@ class Chess {
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[i].length; j++) {
           const piece = this.board[i][j];
-          if (piece != null) {
-            if (piece.color.charAt(0) == this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
+          if (piece !== null) {
+            if (piece.color.charAt(0) === this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
               hasValidMove = true;
             }
-            if (piece.color.charAt(0) == "w") {
+            if (piece.color.charAt(0) === "w") {
               whiteHasPieces = true;
             } else {
               blackHasPieces = true;
@@ -584,7 +591,7 @@ class Chess {
         return "white";
       }
       if (!hasValidMove) {
-        this.turn = this.turn == "w" ? "b" : "w";
+        this.turn = this.turn === "w" ? "b" : "w";
       }
       return null;
     }
@@ -594,12 +601,12 @@ class Chess {
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
-        if (piece != null && piece.color.charAt(0) == this.turn) {
+        if (piece !== null && piece.color.charAt(0) === this.turn) {
           this.moves(indexToAlgebraic([i, j])).forEach((move) => {
             var to = algebraicToIndex(move.to);
             var target = this.board[to[0]][to[1]];
             hasValidMove = true;
-            if (target != null && target.color != piece.color && target.fenId.toLowerCase() === "k") {
+            if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
               winner = piece.color;
             }
           });
@@ -607,8 +614,8 @@ class Chess {
       }
     }
 
-    if (hasValidMove == false) {
-      return this.turn == "w" ? "black" : "white";
+    if (hasValidMove === false) {
+      return this.turn === "w" ? "black" : "white";
     }
 
     return winner;
@@ -623,7 +630,7 @@ class Chess {
       });
       const index = algebraicToIndex(from);
       const piece = this.board[index[0]][index[1]];
-      if (!playerVisable || !this.mods.includes(GameTags.FOG) || sight.includes(index?.toString()) || piece?.color == this.playerColor) {
+      if (!playerVisable || !this.mods.includes(GameTags.FOG) || sight.includes(index?.toString()) || piece?.color === this.playerColor) {
         for (let x = 0; x < this.board.length; x++) {
           for (let y = 0; y < this.board[x].length; y++) {
             if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
@@ -676,14 +683,14 @@ class Chess {
   }
 
   game_over() {
-    return this.winner != null;
+    return this.winner !== null;
   }
 
   async endTurn() {
-    this.turn = this.turn == "w" ? "b" : "w";
+    this.turn = this.turn === "w" ? "b" : "w";
 
     this.winner = this.getGameWinner();
-    if (this.winner != null) {
+    if (this.winner !== null) {
       return;
     }
 
@@ -693,6 +700,27 @@ class Chess {
         await this.board[x][y]?.endOfTurn(this, moves);
       }
     }
+  }
+
+  fog() {
+    if (this.mods.includes(GameTags.FOG)) {
+      let sight = this.moves(this.playerColor).map((move) => {
+        return algebraicToIndex(move.to).toString();
+      });
+
+      let fogArr = [];
+
+      for (let i = 0; i < this.board.length; i++) {
+        for (let j = 0; j < this.board[i].length; j++) {
+          if (!sight.includes(`${i},${j}`) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
+            fogArr.push(indexToAlgebraic([i, j]));
+          }
+        }
+      }
+      return fogArr;
+    }
+
+    return [];
   }
 
   fenFow() {
@@ -767,12 +795,12 @@ class Chess {
     return fen;
   }
 
-  async move(from, to) {
-    const isLegal = this.isLegalMove(from, to);
+  async move(move) {
+    const isLegal = this.isLegalMove(move.sourceSquare, move.targetSquare);
 
     if (isLegal) {
-      const source = [8 - from.charAt(1), from.charCodeAt(0) - 97];
-      const target = [8 - to.charAt(1), to.charCodeAt(0) - 97];
+      const source = [8 - move.sourceSquare.charAt(1), move.sourceSquare.charCodeAt(0) - 97];
+      const target = [8 - move.targetSquare.charAt(1), move.targetSquare.charCodeAt(0) - 97];
       const targetPiece = this.board[target[0]][target[1]];
       const piece = this.board[source[0]][source[1]];
 
@@ -797,3 +825,15 @@ class Chess {
     return isLegal;
   }
 }
+
+let instance = null;
+
+function getChess() {
+  if (!instance) {
+    instance = new Chess();
+  }
+  return instance;
+}
+
+export default getChess;
+export { GameTags, Piece };
