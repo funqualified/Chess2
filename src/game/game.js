@@ -66,7 +66,7 @@ const Game = (props) => {
     if (!move) {
       return "snapback";
     } else if (props.multiplayer && Multiplayer().peerIsConnected) {
-      Multiplayer().conn.send({ board: Chess().board, turn: Chess().turn, winner: Chess().winner });
+      Multiplayer().conn.send({ board: Chess().board, turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
     }
 
     // make random legal move for black
@@ -155,7 +155,7 @@ const Game = (props) => {
       <div className="board">
         <Chessboard
           position={fen}
-          orientation={Chess.playerColor}
+          orientation={Chess().playerColor}
           allowDrag={onDragStart}
           onDrop={onDrop}
           onMouseOutSquare={onMouseoutSquare}

@@ -25,10 +25,12 @@ class Multiplayer {
       getMultiplayer().conn = dataConnection;
 
       dataConnection.on("open", function () {
+        console.log("connection");
         dataConnection.send({
           mods: Chess().mods,
           board: Chess().board,
           turn: Chess().turn,
+          enPassant: Chess().enPassant,
         });
       });
 
@@ -39,6 +41,7 @@ class Multiplayer {
       });
 
       dataConnection.on("disconnected", function () {
+        console.log("disconnection");
         getMultiplayer().peerIsConnected = false;
       });
     });
@@ -51,12 +54,13 @@ class Multiplayer {
       getMultiplayer().conn = getMultiplayer().peer.connect(peerId);
 
       getMultiplayer().conn.on("open", function () {
+        console.log("connection");
         getMultiplayer().peerIsConnected = true;
       });
 
-      this.conn.on("data", getMultiplayer().handleData);
+      getMultiplayer().conn.on("data", getMultiplayer().handleData);
 
-      this.conn.on("error", function (err) {
+      getMultiplayer().conn.on("error", function (err) {
         console.log(err);
       });
     });
@@ -64,7 +68,7 @@ class Multiplayer {
 
   handleData = function (data) {
     if (data.hasOwnProperty("mods")) {
-      getMultiplayer().startGame(data.mods, true, "black");
+      getMultiplayer().startGame(data.mods, "black");
     }
 
     if (data.hasOwnProperty("turn")) {
@@ -75,13 +79,17 @@ class Multiplayer {
       Chess().winner = data.winner;
     }
 
+    if (data.hasOwnProperty("enPassant")) {
+      Chess().enPassant = data.enPassant;
+    }
+
     if (data.hasOwnProperty("board")) {
       Chess().board = data.board.map(function (innerArr) {
         return innerArr.map(function (p) {
           if (!p) {
             return null;
           }
-          return new Piece(p.color, p.fenId, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
         });
       });
 

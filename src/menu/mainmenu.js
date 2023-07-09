@@ -23,17 +23,21 @@ const MainMenu = (props) => {
   }
 
   function joinMultiplayer() {
-    Multiplayer().joinGame(peerId);
     Multiplayer().startGame = handleGameJoined;
+    Multiplayer().joinGame(peerId);
   }
 
   function handleModsChanged(mods) {
     setActiveMods(mods);
   }
 
+  function handlePeerIdChanged(event) {
+    setPeerId(event.target.value);
+  }
+
   function handleGameJoined(mods, color) {
-    Chess.init(mods, color);
-    props.setMutliplayer(true);
+    Chess().init(mods, color);
+    props.setMultiplayer(true);
     navigate("/match");
   }
 
@@ -43,7 +47,7 @@ const MainMenu = (props) => {
       <button onClick={beginSingleplayer}>Single Player</button>
       <button onClick={hostMultiplayer}>Host Game</button>
       <br />
-      <input name="PeerId" defaultValue="" placeholder="enter Peer id to connect" />
+      <input name="PeerId" defaultValue="" onChange={handlePeerIdChanged} placeholder="enter Peer id to connect" />
       <button onClick={joinMultiplayer}>Join Game</button>
       <p>Select all mods you want to use.</p>
       <div id="mod-selector">
