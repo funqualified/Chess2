@@ -29,25 +29,26 @@ class Multiplayer {
         .then((res) => res.json())
         .then((result) => {
           getMultiplayer().gameid = result.id;
-          getMultiplayer().refresh = setInterval(getMultiplayer().keepListingAlive, 1000 * 60);
+          getMultiplayer().refresh = setInterval(getMultiplayer().keepListingAlive, 1000 * 15);
           console.log("host3");
         });
     });
 
     getMultiplayer().peer.on("connection", function (dataConnection) {
+      console.log("host4");
       if (getMultiplayer().peerIsConnected) {
         dataConnection.close();
       }
       getMultiplayer().peerIsConnected = true;
       getMultiplayer().conn = dataConnection;
-      console.log("host4");
+      console.log("host5");
 
       dataConnection.on("open", function () {
         getMultiplayer().closeListing();
         console.log("connection");
         dataConnection.send({
           mods: Chess().mods,
-          board: Chess().board,
+          board: JSON.stringify(Chess().board),
           turn: Chess().turn,
           enPassant: Chess().enPassant,
         });
@@ -121,7 +122,8 @@ class Multiplayer {
     }
 
     if (data.hasOwnProperty("board")) {
-      Chess().board = data.board.map(function (innerArr) {
+      const board = JSON.parse(data.board);
+      Chess().board = board.map(function (innerArr) {
         return innerArr.map(function (p) {
           if (!p) {
             return null;

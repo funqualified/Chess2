@@ -67,7 +67,7 @@ const Game = (props) => {
     if (!move) {
       return "snapback";
     } else if (props.multiplayer && Multiplayer().peerIsConnected) {
-      Multiplayer().conn.send({ board: Chess().board, turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
+      Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
     }
 
     // make random legal move for black
