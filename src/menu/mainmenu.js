@@ -1,7 +1,7 @@
 import Title from "./title";
 import ModManager from "./modManager";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Chess from "../game/chess2";
 import Multiplayer from "../game/multiplayer";
 
@@ -11,6 +11,10 @@ const MainMenu = (props) => {
   const [username, setUsername] = useState("");
   const [peerId, setPeerId] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshGames();
+  }, []);
 
   function beginSingleplayer() {
     Chess().init(activeMods, "white");
@@ -62,7 +66,7 @@ const MainMenu = (props) => {
       <span>
         <select onChange={(e) => setPeerId(e.target.value)}>
           {openGames.map((game) => (
-            <option id={game.id} value={game.peerid}>
+            <option key={game.id} value={game.peerid}>
               {game.username}
             </option>
           ))}
