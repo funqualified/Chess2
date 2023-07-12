@@ -8,13 +8,27 @@ class Multiplayer {
     this.conn = null;
     this.updateUI = () => {};
     this.startGame = () => {};
+    this.gameid = "";
+    this.refresh = null;
   }
 
-  hostGame() {
+  hostGame(username, mods) {
     getMultiplayer().peer = new Peer();
     getMultiplayer().peer.on("open", function (id) {
-      console.log("My peer ID is: " + id);
-      window.alert("My peer ID is: " + id);
+      fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/newGame", {
+        mode: "cors",
+        method: "POST",
+        body: JSON.stringify({ peerid: id, username: username, mods: mods }),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          getMultiplayer().gameid = result.id;
+          getMultiplayer().refresh = setInterval(getMultiplayer().keepListingAlive, 1000 * 60);
+        });
     });
 
     getMultiplayer().peer.on("connection", function (dataConnection) {
@@ -25,6 +39,7 @@ class Multiplayer {
       getMultiplayer().conn = dataConnection;
 
       dataConnection.on("open", function () {
+        getMultiplayer().closeListing();
         console.log("connection");
         dataConnection.send({
           mods: Chess().mods,
@@ -50,7 +65,6 @@ class Multiplayer {
   joinGame(peerId) {
     getMultiplayer().peer = new Peer();
     getMultiplayer().peer.on("open", function (id) {
-      console.log("My peer ID is: " + id);
       getMultiplayer().conn = getMultiplayer().peer.connect(peerId);
 
       getMultiplayer().conn.on("open", function () {
@@ -65,6 +79,21 @@ class Multiplayer {
       });
     });
   }
+
+  closeListing = () => {
+    clearInterval(getMultiplayer().refresh);
+    fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/closeGame/${getMultiplayer().gameid}`, {
+      mode: "cors",
+      method: "DELETE",
+    });
+  };
+
+  keepListingAlive = () => {
+    fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/keepGameAlive/${getMultiplayer().gameid}`, {
+      mode: "cors",
+      method: "POST",
+    });
+  };
 
   handleData = function (data) {
     if (data.hasOwnProperty("mods")) {

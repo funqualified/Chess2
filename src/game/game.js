@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import React from "react";
 import Chess from "./chess2";
 import Multiplayer from "./multiplayer";
+import getMultiplayer from "./multiplayer";
 
 const Game = (props) => {
   const navigate = useNavigate();
@@ -147,6 +148,7 @@ const Game = (props) => {
   }
 
   function quit() {
+    getMultiplayer().closeListing();
     navigate("/");
   }
 

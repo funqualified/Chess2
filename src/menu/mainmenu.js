@@ -7,6 +7,8 @@ import Multiplayer from "../game/multiplayer";
 
 const MainMenu = (props) => {
   const [activeMods, setActiveMods] = useState([]);
+  const [openGames, setOpenGames] = useState([]);
+  const [username, setUsername] = useState("");
   const [peerId, setPeerId] = useState("");
   const navigate = useNavigate();
 
@@ -18,7 +20,7 @@ const MainMenu = (props) => {
   function hostMultiplayer() {
     Chess().init(activeMods, "white");
     props.setMultiplayer(true);
-    Multiplayer().hostGame();
+    Multiplayer().hostGame(username, activeMods);
     navigate("/match");
   }
 
@@ -27,12 +29,20 @@ const MainMenu = (props) => {
     Multiplayer().joinGame(peerId);
   }
 
+  function refreshGames() {
+    fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/games", { mode: "cors" })
+      .then((res) => res.json())
+      .then((result) => {
+        setOpenGames(result);
+      });
+  }
+
   function handleModsChanged(mods) {
     setActiveMods(mods);
   }
 
-  function handlePeerIdChanged(event) {
-    setPeerId(event.target.value);
+  function handleUsernameChanged(event) {
+    setUsername(event.target.value);
   }
 
   function handleGameJoined(mods, color) {
@@ -45,10 +55,22 @@ const MainMenu = (props) => {
     <div id="menu-space" className="menu">
       <Title />
       <button onClick={beginSingleplayer}>Single Player</button>
+      <br />
+      <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
       <button onClick={hostMultiplayer}>Host Game</button>
       <br />
-      <input name="PeerId" defaultValue="" onChange={handlePeerIdChanged} placeholder="enter Peer id to connect" />
+      <span>
+        <select onChange={(e) => setPeerId(e.target.value)}>
+          {openGames.map((game) => (
+            <option id={game.id} value={game.peerid}>
+              {game.username}
+            </option>
+          ))}
+        </select>
+        <button onClick={refreshGames}>Refresh</button>
+      </span>
       <button onClick={joinMultiplayer}>Join Game</button>
+      <br />
       <p>Select all mods you want to use.</p>
       <div id="mod-selector">
         <ModManager handleModsChanged={handleModsChanged} />
