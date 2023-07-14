@@ -64,7 +64,8 @@ const MainMenu = (props) => {
       <button onClick={hostMultiplayer}>Host Game</button>
       <br />
       <span>
-        <select onChange={(e) => setPeerId(e.target.value)}>
+        <select value={peerId} onChange={(e) => setPeerId(e.target.value)}>
+          <option value="">Select a user to join</option>
           {openGames.map((game) => (
             <option key={game.id} value={game.peerid}>
               {game.username}

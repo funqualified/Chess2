@@ -13,9 +13,7 @@ class Multiplayer {
   }
 
   hostGame(username, mods) {
-    console.log("host1");
     getMultiplayer().peer = new Peer();
-    console.log("host2");
     getMultiplayer().peer.on("open", function (id) {
       fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/newGame", {
         mode: "cors",
@@ -30,18 +28,15 @@ class Multiplayer {
         .then((result) => {
           getMultiplayer().gameid = result.id;
           getMultiplayer().refresh = setInterval(getMultiplayer().keepListingAlive, 1000 * 15);
-          console.log("host3");
         });
     });
 
     getMultiplayer().peer.on("connection", function (dataConnection) {
-      console.log("host4");
       if (getMultiplayer().peerIsConnected) {
         dataConnection.close();
       }
       getMultiplayer().peerIsConnected = true;
       getMultiplayer().conn = dataConnection;
-      console.log("host5");
 
       dataConnection.on("open", function () {
         getMultiplayer().closeListing();
@@ -70,11 +65,8 @@ class Multiplayer {
   }
 
   joinGame(peerId) {
-    console.log("join1");
     getMultiplayer().peer = new Peer();
-    console.log("join2");
     getMultiplayer().peer.on("open", function (id) {
-      console.log("join3");
       getMultiplayer().conn = getMultiplayer().peer.connect(peerId);
 
       getMultiplayer().conn.on("open", function () {
