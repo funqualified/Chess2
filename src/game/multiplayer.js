@@ -46,6 +46,7 @@ class Multiplayer {
       dataConnection.on("open", function () {
         getMultiplayer().closeListing();
         console.log("connection");
+        getMultiplayer().updateUI();
         dataConnection.send({
           mods: Chess().mods,
           board: JSON.stringify(Chess().board),
@@ -60,9 +61,10 @@ class Multiplayer {
         console.log(err);
       });
 
-      dataConnection.on("disconnected", function () {
+      dataConnection.on("close", function () {
         console.log("disconnection");
         getMultiplayer().peerIsConnected = false;
+        getMultiplayer().updateUI();
       });
     });
   }
@@ -77,6 +79,7 @@ class Multiplayer {
 
       getMultiplayer().conn.on("open", function () {
         console.log("connection");
+        getMultiplayer().updateUI();
         getMultiplayer().peerIsConnected = true;
       });
 
@@ -97,14 +100,18 @@ class Multiplayer {
   };
 
   keepListingAlive = () => {
+    console.log(getMultiplayer());
     fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/keepGameAlive/${getMultiplayer().gameid}`, {
       mode: "cors",
       method: "POST",
     });
   };
 
+  disconnect = () => {
+    getMultiplayer().peer.destroy();
+  };
+
   handleData = function (data) {
-    console.log(data);
     if (data.hasOwnProperty("mods")) {
       getMultiplayer().startGame(data.mods, "black");
     }
@@ -131,9 +138,8 @@ class Multiplayer {
           return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
         });
       });
-
-      getMultiplayer().updateUI();
     }
+    getMultiplayer().updateUI();
   };
 }
 

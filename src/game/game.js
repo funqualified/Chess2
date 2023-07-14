@@ -5,6 +5,7 @@ import React from "react";
 import Chess from "./chess2";
 import Multiplayer from "./multiplayer";
 import getMultiplayer from "./multiplayer";
+import ConnectionIndicator from "./connectionIndicator";
 
 const Game = (props) => {
   const navigate = useNavigate();
@@ -148,12 +149,14 @@ const Game = (props) => {
   }
 
   function quit() {
+    getMultiplayer().disconnect();
     getMultiplayer().closeListing();
     navigate("/");
   }
 
   return (
     <div id="game-space" className="game">
+      <ConnectionIndicator />
       <div className="board">
         <Chessboard
           position={fen}
