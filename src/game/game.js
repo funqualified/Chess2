@@ -149,14 +149,16 @@ const Game = (props) => {
   }
 
   function quit() {
-    getMultiplayer().disconnect();
-    getMultiplayer().closeListing();
+    if (props.multiplayer) {
+      getMultiplayer().disconnect();
+      getMultiplayer().closeListing();
+    }
     navigate("/");
   }
 
   return (
     <div id="game-space" className="game">
-      <ConnectionIndicator />
+      {props.multiplayer ? <ConnectionIndicator /> : ""}
       <div className="board">
         <Chessboard
           position={fen}
