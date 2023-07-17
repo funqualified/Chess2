@@ -156,6 +156,11 @@ const Game = (props) => {
     navigate("/");
   }
 
+  function undo() {
+    Chess().undo();
+    updateUI();
+  }
+
   return (
     <div id="game-space" className="game">
       {props.multiplayer ? <ConnectionIndicator /> : ""}
@@ -179,6 +184,7 @@ const Game = (props) => {
           <p>{gameInfo}</p>
         </div>
         <button onClick={quit}>Quit Game</button>
+        <button onClick={undo}>Undo</button>
       </div>
     </div>
   );

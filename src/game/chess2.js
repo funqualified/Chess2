@@ -477,8 +477,50 @@ class Chess {
     this.initialized = false;
   }
 
+  undo() {
+    if (this.history.length > 0) {
+      const move = this.history.pop();
+      this.board = move.board.map(function (innerArr) {
+        return innerArr.map(function (p) {
+          if (!p) {
+            return null;
+          }
+          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+        });
+      });
+      this.turn = move.turn;
+      this.castling = move.castling;
+      this.enPassant = move.enPassant;
+      this.winner = null;
+      return true;
+    }
+    return false;
+  }
+
+  copy() {
+    const copy = new Chess();
+    copy.board = this.board.map(function (innerArr) {
+      return innerArr.map(function (p) {
+        if (!p) {
+          return null;
+        }
+        return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+      });
+    });
+    copy.turn = this.turn;
+    copy.castling = this.castling;
+    copy.enPassant = this.enPassant;
+    copy.winner = this.winner;
+    copy.initialized = this.initialized;
+    copy.history = this.history;
+    copy.mods = this.mods;
+    copy.playerColor = this.playerColor;
+    return copy;
+  }
+
   init(mods, color = "white") {
     this.board = [];
+    this.history = [];
     this.mods = mods;
     var fen = this.getInitialFen();
     const rows = fen.split(" ")[0].split("/");
@@ -617,14 +659,14 @@ class Chess {
       }
       //TODO: Doesn't matter now, but in the future, there could be an edge case where white and black lose all pieces at the same time
       // Come to think of it, I may need to add draws as a result for the normal win detector.
+      if (!whiteHasPieces && !blackHasPieces) {
+        return "draw";
+      }
       if (!whiteHasPieces) {
         return "black";
       }
       if (!blackHasPieces) {
         return "white";
-      }
-      if (!hasValidMove) {
-        this.turn = this.turn === "w" ? "b" : "w";
       }
       return null;
     }
@@ -647,7 +689,7 @@ class Chess {
       }
     }
 
-    if (hasValidMove === false) {
+    if (!hasValidMove) {
       return this.turn === "w" ? "black" : "white";
     }
 
@@ -731,6 +773,23 @@ class Chess {
     for (let x = 0; x < this.board.length; x++) {
       for (let y = 0; y < this.board[x].length; y++) {
         await this.board[x][y]?.endOfTurn(this, moves);
+      }
+    }
+
+    if (this.mods.includes(GameTags.ELIMINATION)) {
+      var hasValidMove = false;
+      for (let i = 0; i < this.board.length; i++) {
+        for (let j = 0; j < this.board[i].length; j++) {
+          const piece = this.board[i][j];
+          if (piece !== null) {
+            if (piece.color.charAt(0) === this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
+              hasValidMove = true;
+            }
+          }
+        }
+      }
+      if (!hasValidMove) {
+        this.turn = this.turn === "w" ? "b" : "w";
       }
     }
 
@@ -837,10 +896,15 @@ class Chess {
     return fen;
   }
 
+  //TODO: Should probably not use checkLegality here, Come up with a better way to handle this
   async move(move) {
     const isLegal = this.isLegalMove(move.sourceSquare, move.targetSquare);
 
     if (isLegal) {
+      const gamestate = JSON.parse(JSON.stringify(this));
+      delete gamestate.history;
+      this.history.push(gamestate);
+
       const source = [8 - move.sourceSquare.charAt(1), move.sourceSquare.charCodeAt(0) - 97];
       const target = [8 - move.targetSquare.charAt(1), move.targetSquare.charCodeAt(0) - 97];
       const targetPiece = this.board[target[0]][target[1]];
