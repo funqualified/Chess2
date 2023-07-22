@@ -797,8 +797,8 @@ class Chess {
 
     if (copy.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
       targetPiece.hasShield = false;
-      copy.endTurn();
-      return true;
+      copy.endTurn(true);
+      return copy;
     }
 
     if (copy.mods.includes(GameTags.VAMPIRE) && targetPiece) {
@@ -837,6 +837,7 @@ class Chess {
     //Ensure move doesn't put or keep the player in check
     if (!this.isCopy && !this.mods.includes(GameTags.ELIMINATION)) {
       const simulatedGame = this.simulateMove(from, to);
+      console.log(simulatedGame);
       if (simulatedGame.isInCheck(piece.color)) {
         return false;
       }
