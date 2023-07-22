@@ -30,7 +30,7 @@ function pieceFactory(fenId, index) {
     case "q":
       return new Piece(color, fenId, index, "Queen", ["vertical", "horizontal", "diagonal"]);
     case "k":
-      return new Piece(color, fenId, index, "King", ["king"], false, 100);
+      return new Piece(color, fenId, index, "King", ["king"], false, false, 100);
     default:
       console.log("Unrecognized piece");
       return new Piece(color, fenId);
@@ -60,7 +60,7 @@ class Piece {
     return null; // Object not found in the array
   }
 
-  async endOfTurn(game, moves) {
+  async endOfTurn(game, moves, defaultAction = false) {
     if (game.mods.includes(GameTags.LOYALTY)) {
       if (this.fenId.toLowerCase() === "k") {
         this.loyalty = 100;
@@ -88,7 +88,7 @@ class Piece {
         if (this.color !== game.playerColor) {
           var value = Math.random() * 51;
         } else {
-          var value = await gameplayUIManager().QTUI();
+          var value = defaultAction ? "q" : await gameplayUIManager().QTUI();
         }
         var fen = null;
         if (value < 10) {
@@ -109,12 +109,14 @@ class Piece {
         if (this.color !== game.playerColor) {
           game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
-          var fen = await gameplayUIManager().choiceUI([
-            { label: "Queen", response: "q" },
-            { label: "Rook", response: "r" },
-            { label: "Bishop", response: "b" },
-            { label: "Knight", response: "n" },
-          ]);
+          var fen = defaultAction
+            ? "q"
+            : await gameplayUIManager().choiceUI([
+                { label: "Queen", response: "q" },
+                { label: "Rook", response: "r" },
+                { label: "Bishop", response: "b" },
+                { label: "Knight", response: "n" },
+              ]);
           game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       }
@@ -515,6 +517,7 @@ class Chess {
     copy.history = this.history;
     copy.mods = this.mods;
     copy.playerColor = this.playerColor;
+    copy.isCopy = true;
     return copy;
   }
 
@@ -530,6 +533,7 @@ class Chess {
     this.playerColor = color;
     this.winner = null;
     this.initialized = true;
+    this.isCopy = false;
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
@@ -740,6 +744,78 @@ class Chess {
     return moves;
   }
 
+  isInCheck(color) {
+    var king = null;
+    var kingIndex = null;
+
+    var enemyColor = color === "white" ? "black" : "white";
+
+    //Find the king
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[i].length; j++) {
+        if (this.board[i][j] !== null && this.board[i][j].color === color && this.board[i][j].fenId.toLowerCase() === "k") {
+          king = this.board[i][j];
+          kingIndex = [i, j];
+          break;
+        }
+      }
+    }
+
+    if (king.hasShield) {
+      return false;
+    }
+
+    if (kingIndex === null) {
+      console.log("No king found");
+      return false;
+    }
+
+    //Check if any enemy pieces can attack the king
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[i].length; j++) {
+        const piece = this.board[i][j];
+        if (piece !== null && piece.color === enemyColor) {
+          if (piece.isLegalMove([i, j], kingIndex, this.board, this)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  //Creates a copy of the entire game and simulates the move on the copy
+  simulateMove(from, to) {
+    const copy = this.copy();
+    const source = algebraicToIndex(from);
+    const target = algebraicToIndex(to);
+    const piece = copy.board[source[0]][source[1]];
+    const targetPiece = copy.board[target[0]][target[1]];
+
+    piece.move(copy, { from: source, to: target });
+
+    if (copy.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
+      targetPiece.hasShield = false;
+      copy.endTurn();
+      return true;
+    }
+
+    if (copy.mods.includes(GameTags.VAMPIRE) && targetPiece) {
+      targetPiece.moveTypes.forEach((value) => {
+        if (!piece.moveTypes.includes(value)) {
+          piece.moveTypes.push(value);
+        }
+      });
+    }
+
+    copy.board[source[0]][source[1]] = null;
+    copy.board[target[0]][target[1]] = piece;
+    copy.endTurn(true);
+
+    return copy;
+  }
+
   isLegalMove(from, to) {
     const source = algebraicToIndex(from);
     const target = algebraicToIndex(to);
@@ -754,17 +830,29 @@ class Chess {
       return false;
     }
 
-    return piece.isLegalMove(source, target, targetPiece, this);
+    if (!piece.isLegalMove(source, target, targetPiece, this)) {
+      return false;
+    }
+
+    //Ensure move doesn't put or keep the player in check
+    if (!this.isCopy && !this.mods.includes(GameTags.ELIMINATION)) {
+      const simulatedGame = this.simulateMove(from, to);
+      if (simulatedGame.isInCheck(piece.color)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   game_over() {
     return this.winner !== null;
   }
 
-  async endTurn() {
+  async endTurn(simulatedMove = false) {
     this.turn = this.turn === "w" ? "b" : "w";
 
-    this.winner = this.getGameWinner();
+    if (!simulatedMove) this.winner = this.getGameWinner();
     if (this.winner !== null) {
       return;
     }
@@ -772,7 +860,7 @@ class Chess {
     const moves = this.moves();
     for (let x = 0; x < this.board.length; x++) {
       for (let y = 0; y < this.board[x].length; y++) {
-        await this.board[x][y]?.endOfTurn(this, moves);
+        await this.board[x][y]?.endOfTurn(this, moves, simulatedMove);
       }
     }
 
