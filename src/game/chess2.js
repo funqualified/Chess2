@@ -947,7 +947,7 @@ class Chess {
   }
 
   fen() {
-    if (this.mods.includes(GameTags.FOG)) {
+    if (this.mods.includes(GameTags.FOG) && !this.game_over()) {
       return this.fenFow();
     }
     let fen = "";
