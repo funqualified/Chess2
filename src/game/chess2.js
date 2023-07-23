@@ -1,4 +1,5 @@
 import gameplayUIManager from "./gameplayUI";
+import getName from "../mods/PieceNames";
 
 const GameTags = {
   FOG: "You can only see spaces your pieces can move to",
@@ -14,26 +15,27 @@ const GameTags = {
   QTE_PROMOTION: "Pawn promotion requires a quicktime minigame",
   NO_EN_PASSANT: "Pawns may not make the En passant move",
   NO_CASTLING: "Kings may not make the castling move",
+  NAMES: "Pieces have names",
 };
 
 function pieceFactory(fenId, index) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
-      return new Piece(color, fenId, index, "Pawn", ["pawn"], true, true);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("pawn") : "Pawn", ["pawn"], true, true);
     case "b":
-      return new Piece(color, fenId, index, "Bishop", ["diagonal"]);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("bishop") : "Bishop", ["diagonal"]);
     case "n":
-      return new Piece(color, fenId, index, "Knight", ["knight"]);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("knight") : "Knight", ["knight"]);
     case "r":
-      return new Piece(color, fenId, index, "Rook", ["vertical", "horizontal"]);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("rook") : "Rook", ["vertical", "horizontal"]);
     case "q":
-      return new Piece(color, fenId, index, "Queen", ["vertical", "horizontal", "diagonal"]);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"]);
     case "k":
-      return new Piece(color, fenId, index, "King", ["king"], false, false, 100);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("king") : "King", ["king"], false, false, 100);
     default:
       console.log("Unrecognized piece");
-      return new Piece(color, fenId);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName() : "");
   }
 }
 
@@ -43,7 +45,7 @@ class Piece {
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
-    this.name = name;
+    this.name = instance.mods.includes(GameTags.VAMPIRE) && instance.mods.includes(GameTags.NAMES) ? getName("vampire") : name;
     this.loyalty = loyalty;
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
@@ -153,7 +155,7 @@ class Piece {
   }
   info(game) {
     let details = "";
-    details += `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
+    details += game.mods.includes(GameTags.NAMES) ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
     details += "Abilities:\n";
     if (game.mods.includes(GameTags.VAMPIRE)) {
       details += "Move " + this.moveTypes + "\n";
@@ -837,7 +839,6 @@ class Chess {
     //Ensure move doesn't put or keep the player in check
     if (!this.isCopy && !this.mods.includes(GameTags.ELIMINATION)) {
       const simulatedGame = this.simulateMove(from, to);
-      console.log(simulatedGame);
       if (simulatedGame.isInCheck(piece.color)) {
         return false;
       }
