@@ -37,7 +37,11 @@ function getName(piece) {
         return getDefaultName() + " II";
       }
     case "vampire":
-      return vampireNames[Math.floor(Math.random() * vampireNames.length)];
+      if (Math.random() < 0.5) {
+        return getVampireName();
+      } else {
+        return getDefaultName();
+      }
     default:
       return getDefaultName();
   }
@@ -159,7 +163,7 @@ const defaultNames = [
   "Caleb",
   "Madeline",
   "No one",
-  "John Spartan 117 Master Chief of the Seven Kingdoms of the North and the East and the South and the West and the W and the W",
+  "John Spartan 117 Master Chief of the Seven Kingdoms of the North and the East and the South and the West",
   "James",
   "Jim",
   "Jimothy",
@@ -339,6 +343,10 @@ function getQueenName() {
 
 function getKingName() {
   return kingNames[Math.floor(Math.random() * kingNames.length)];
+}
+
+function getVampireName() {
+  return vampireNames[Math.floor(Math.random() * vampireNames.length)];
 }
 
 function getDefaultName() {

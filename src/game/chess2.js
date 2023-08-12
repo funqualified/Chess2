@@ -28,7 +28,7 @@ function pieceFactory(fenId, index) {
     case "n":
       return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("knight") : "Knight", ["knight"]);
     case "r":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("rook") : "Rook", ["vertical", "horizontal"]);
+      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("rook") : "Rook", ["rook"]);
     case "q":
       return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"]);
     case "k":
@@ -147,12 +147,59 @@ class Piece {
       Math.abs(move.from[1] - move.to[1]) === 1
     ) {
       game.board[move.from[0]][move.to[1]] = null;
+      game.board[move.to[0]][move.to[1]] = this;
+      return true;
     }
 
     if (this.moveTypes.includes("king")) {
-      //Castled
+      //Remove castling rights if king moves
+      if (this.color === "white") {
+        game.castling = game.castling.replace("K", "");
+        game.castling = game.castling.replace("Q", "");
+      }
+      if (this.color === "black") {
+        game.castling = game.castling.replace("k", "");
+        game.castling = game.castling.replace("q", "");
+      }
+
+      //Castling
+      const targetPiece = game.board[move.to[0]][move.to[1]];
+      if (targetPiece && targetPiece.fenId.toUpperCase() === "R" && targetPiece.color === this.color) {
+        //move king and rook to correct positions
+        game.board[move.from[0]][move.from[1]] = null;
+        game.board[move.to[0]][move.to[1]] = null;
+        if (move.to[1] > move.from[1]) {
+          game.board[move.to[0]][5] = targetPiece;
+          game.board[move.to[0]][6] = this;
+        } else {
+          game.board[move.to[0]][3] = targetPiece;
+          game.board[move.to[0]][2] = this;
+        }
+        return true;
+      }
     }
+
+    if (!game.isCopy && this.moveTypes.includes("rook") && move.from[1] == this.startingIndex[1]) {
+      //get king index
+      var kingIndex = null;
+      for (let i = 0; i < game.board.length; i++) {
+        for (let j = 0; j < game.board[i].length; j++) {
+          if (game.board[i][j] && game.board[i][j].fenId.toUpperCase() === "K" && game.board[i][j].color === this.color) {
+            kingIndex = [i, j];
+          }
+        }
+      }
+
+      //Remove castling rights if rook moves, using chess960 rules
+      if (this.startingIndex[1] < kingIndex[1]) {
+        game.castling = game.castling.replace(this.color === "white" ? "Q" : "q", "");
+      } else {
+        game.castling = game.castling.replace(this.color === "white" ? "K" : "k", "");
+      }
+    }
+    return false;
   }
+
   info(game) {
     let details = "";
     details += game.mods.includes(GameTags.NAMES) ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
@@ -205,6 +252,11 @@ class Piece {
             isMoveLegal = true;
           }
           break;
+        case "rook":
+          if (this.horizontalMove(source, target, targetPiece, game) || this.verticalMove(source, target, targetPiece, game)) {
+            isMoveLegal = true;
+          }
+          break;
         default:
           console.log("Unknown move type");
           break;
@@ -214,6 +266,10 @@ class Piece {
   }
 
   pawnMove(source, target, targetPiece, game) {
+    if (!!targetPiece && this.color === targetPiece.color) {
+      return false;
+    }
+
     if (this.color === "white") {
       if (source[1] === target[1]) {
         if (source[0] - target[0] === 2 && source[0] === 6 && !targetPiece && !game.board[source[0] - 1][source[1]]) {
@@ -261,6 +317,10 @@ class Piece {
   }
 
   knightMove(source, target, targetPiece, game) {
+    if (!!targetPiece && this.color === targetPiece.color) {
+      return false;
+    }
+
     if (
       (Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === 1) ||
       (Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === 2)
@@ -278,6 +338,10 @@ class Piece {
   }
 
   horizontalMove(source, target, targetPiece, game) {
+    if (!!targetPiece && this.color === targetPiece.color) {
+      return false;
+    }
+
     if (source[0] === target[0]) {
       const minRow = Math.min(source[1], target[1]);
       const maxRow = Math.max(source[1], target[1]);
@@ -306,6 +370,10 @@ class Piece {
   }
 
   verticalMove(source, target, targetPiece, game) {
+    if (!!targetPiece && this.color === targetPiece.color) {
+      return false;
+    }
+
     if (source[1] === target[1]) {
       // Rook moves vertically
       const minCol = Math.min(source[0], target[0]);
@@ -321,6 +389,10 @@ class Piece {
   }
 
   diagonalMove(source, target, targetPiece, game) {
+    if (!!targetPiece && this.color === targetPiece.color) {
+      return false;
+    }
+
     if (Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1])) {
       // Bishop moves diagonally
       const startRow = source[1];
@@ -432,35 +504,49 @@ class Piece {
 
   kingMove(source, target, targetPiece, game) {
     if (Math.abs(source[0] - target[0]) <= 1 && Math.abs(source[1] - target[1]) <= 1) {
+      if (!!targetPiece && this.color === targetPiece.color) {
+        return false;
+      }
       // King moves 1 space in any direction
       return true;
-    } else if (source[1] === target[1] && Math.abs(source[1] === target[1])) {
-      // King castles
-      if (
-        Math.abs(source[0] - target[0]) === 2 &&
-        source[1] === target[1] &&
-        game.board[source[1]][source[0]] === "K" &&
-        game.board[source[1]][7] === "R" &&
-        !game.board[source[1]][5] &&
-        !game.board[source[1]][6]
-      ) {
-        return true;
-      } else if (
-        Math.abs(source[0] - target[0]) === 2 &&
-        source[1] === target[1] &&
-        game.board[source[1]][source[0]] === "k" &&
-        game.board[source[1]][0] === "r" &&
-        !game.board[source[1]][1] &&
-        !game.board[source[1]][2] &&
-        !game.board[source[1]][3]
-      ) {
-        return true;
+    } else if (
+      !game.mods.includes(GameTags.NO_CASTLING) &&
+      targetPiece &&
+      targetPiece.fenId &&
+      targetPiece.fenId.toUpperCase() === "R" &&
+      targetPiece.color === this.color &&
+      game.castling.includes(source[1] < target[1] ? (this.color === "white" ? "K" : "k") : this.color === "white" ? "Q" : "q")
+    ) {
+      //Check if there is an obstruction between the king and rook and the end spaces
+      const kingEndCol = source[1] < target[1] ? 6 : 2;
+      const rookEndCol = source[1] < target[1] ? 5 : 3;
+      const minCol = Math.min(source[1], target[1], kingEndCol, rookEndCol);
+      const maxCol = Math.max(source[1], target[1], kingEndCol, rookEndCol);
+      for (let j = minCol; j <= maxCol; j++) {
+        if (game.board[source[0]][j] && game.board[source[0]][j] !== this && game.board[source[0]][j] !== targetPiece) {
+          return false;
+        }
       }
+      // Check if there is a check between the king start and end spaces
+      const minCol2 = Math.min(source[1], kingEndCol);
+      const maxCol2 = Math.max(source[1], kingEndCol);
+      for (let j = minCol2; j <= maxCol2; j++) {
+        if (game.isCheck(this.color, [source[0], j], game.board)) {
+          return false;
+        }
+      }
+
+      // King castles
+      return true;
     } else if (game.mods.includes(GameTags.WRAP)) {
+      if (!!targetPiece && this.color === targetPiece.color) {
+        return false;
+      }
       if (
         (Math.abs(source[0] - target[0]) <= 1 && source[1] === 0 && target[1] === game.board[target[0]].length - 1) ||
         (source[1] === game.board[source[1]].length - 1 && target[1] === 0)
       ) {
+        // King moves 1 space in any direction over wrap
         return true;
       }
     }
@@ -746,6 +832,24 @@ class Chess {
     return moves;
   }
 
+  isCheck(color, kingIndex, board) {
+    var enemyColor = color === "white" ? "black" : "white";
+
+    //Check if any enemy pieces can attack the king
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {
+        const piece = board[i][j];
+        if (piece !== null && piece.color === enemyColor) {
+          if (piece.isLegalMove([i, j], kingIndex, board, this)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
   isInCheck(color) {
     var king = null;
     var kingIndex = null;
@@ -825,10 +929,6 @@ class Chess {
     const targetPiece = this.board[target[0]][target[1]];
 
     if (!piece) {
-      return false;
-    }
-
-    if (!!targetPiece && piece.color === targetPiece.color) {
       return false;
     }
 
@@ -986,7 +1086,6 @@ class Chess {
     return fen;
   }
 
-  //TODO: Should probably not use checkLegality here, Come up with a better way to handle this
   async move(move) {
     const isLegal = this.isLegalMove(move.sourceSquare, move.targetSquare);
 
@@ -1000,7 +1099,7 @@ class Chess {
       const targetPiece = this.board[target[0]][target[1]];
       const piece = this.board[source[0]][source[1]];
 
-      piece.move(this, { from: source, to: target });
+      const moveHandled = piece.move(this, { from: source, to: target });
 
       if (this.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
         targetPiece.hasShield = false;
@@ -1016,8 +1115,10 @@ class Chess {
         });
       }
 
-      this.board[source[0]][source[1]] = null;
-      this.board[target[0]][target[1]] = piece;
+      if (!moveHandled) {
+        this.board[source[0]][source[1]] = null;
+        this.board[target[0]][target[1]] = piece;
+      }
       await this.endTurn();
     }
     return isLegal;
