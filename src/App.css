@@ -81,6 +81,7 @@ input[type="checkbox"] {
   max-width: 95vh;
   margin: auto;
   display: flex;
+  touch-action: none;
 }
 
 #mod-selector {

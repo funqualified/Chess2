@@ -25,6 +25,7 @@ const Game = (props) => {
   const [fen, setFen] = useState("");
   const [gameInfo, setGameInfo] = useState("");
   const [pieceInfo, setPieceInfo] = useState("");
+  const [selectedSquare, setSelectedSquare] = useState("");
   const [moveHighlights, setMoveHighlights] = useState({});
   const [fogHighlights, setFogHighlights] = useState({});
 
@@ -60,9 +61,9 @@ const Game = (props) => {
     updateUI();
   }
 
-  async function onDrop(source, target) {
+  async function onDrop(drag) {
     // see if the move is legal
-    var move = await Chess().move(source, target);
+    var move = await Chess().move(drag);
 
     // illegal move
     if (!move) {
@@ -70,6 +71,8 @@ const Game = (props) => {
     } else if (props.multiplayer && Multiplayer().peerIsConnected) {
       Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
     }
+
+    selectSquare(drag.targetSquare);
 
     // make random legal move for black
     if (!props.multiplayer && !Chess().game_over()) {
@@ -79,7 +82,7 @@ const Game = (props) => {
     updateUI();
   }
 
-  function onMouseoverSquare(square) {
+  function selectSquare(square) {
     const info = Chess().getPieceInfo(square);
 
     if (info) {
@@ -95,11 +98,9 @@ const Game = (props) => {
   }
 
   function greySquareMoves(square) {
+    console.trace();
     // get list of possible moves for this square
     var moves = Chess().moves(square, true);
-
-    // exit if there are no moves available for this square
-    if (moves.length === 0) return;
 
     var squaresToHighlight = [];
     squaresToHighlight.push(square);
@@ -170,8 +171,8 @@ const Game = (props) => {
           orientation={Chess().playerColor}
           allowDrag={onDragStart}
           onDrop={onDrop}
-          onMouseOutSquare={onMouseoutSquare}
-          onMouseOverSquare={onMouseoverSquare}
+          onMouseOverSquare={selectSquare}
+          onSquareClick={selectSquare}
           squareStyles={{ ...fogHighlights, ...moveHighlights }}
           width={window.innerWidth * 0.7 < window.innerHeight * 0.9 ? window.innerWidth * 0.7 : window.innerHeight * 0.9}
         />
