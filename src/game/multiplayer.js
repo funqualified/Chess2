@@ -9,16 +9,18 @@ class Multiplayer {
     this.updateUI = () => {};
     this.startGame = () => {};
     this.gameid = "";
+    this.isPrivate = false;
     this.refresh = null;
   }
 
-  hostGame(username, mods) {
+  hostGame(username, mods, isPrivate) {
     getMultiplayer().peer = new Peer();
+    getMultiplayer().isPrivate = isPrivate;
     getMultiplayer().peer.on("open", function (id) {
       fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/newGame", {
         mode: "cors",
         method: "POST",
-        body: JSON.stringify({ peerid: id, username: username, mods: mods }),
+        body: JSON.stringify({ peerid: id, username: username, mods: mods, isPrivate: isPrivate }),
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
