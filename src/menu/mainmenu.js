@@ -31,13 +31,19 @@ const MainMenu = (props) => {
     navigate("/match");
   }
 
-  function joinMultiplayer() {
-    Multiplayer().startGame = handleGameJoined;
-    if(peerId === "") {
-      Multiplayer().joinGame(gameId);
+  async function joinMultiplayer() {
+    if (peerId === "") {
+      var peerIdFromGameId = await Multiplayer().getPeerIdfromGameId(gameId);
+      if (!peerIdFromGameId || peerIdFromGameId === "") {
+        alert("Invalid game id");
+        return;
+      }
+      Multiplayer().startGame = handleGameJoined;
+      Multiplayer().joinGame(peerIdFromGameId);
     } else {
+      Multiplayer().startGame = handleGameJoined;
       Multiplayer().joinGame(peerId);
-    } 
+    }
   }
 
   function refreshGames() {
@@ -57,15 +63,19 @@ const MainMenu = (props) => {
   }
 
   function handleGameIdChanged(event) {
-    //Filter out non-alphabetical characters
-    event.target.value = event.target.value.replace(/[^a-zA-Z]/g, "");
+    //Filter out non-alphanumeric characters
+    event.target.value = event.target.value.replace(/[^a-zA-Z0-9]/g, "");
+    //replace 1 with I
+    event.target.value = event.target.value.replace(/1/g, "I");
+    //replace 0 with O
+    event.target.value = event.target.value.replace(/0/g, "O");
     //Convert to uppercase
     event.target.value = event.target.value.toUpperCase();
-    
+
     setgameId(event.target.value);
   }
 
-  function handlsIsPrivateChange(event) {
+  function handleIsPrivateChange(event) {
     setIsPrivate(event.target.checked);
   }
 
@@ -89,11 +99,10 @@ const MainMenu = (props) => {
           <button onClick={() => setScreen("createGame")}>Create Game</button>
           <button onClick={() => setScreen("joinGame")}>Join Game</button>
           <button onClick={() => setScreen("mainmenu")}>Back</button>
-
         </div>
       )}
       {screen === "singleplayer" && (
-        <div  className="menu">
+        <div className="menu">
           <p>Select all mods you want to use.</p>
           <div id="mod-selector">
             <ModManager handleModsChanged={handleModsChanged} />
@@ -107,7 +116,7 @@ const MainMenu = (props) => {
           <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
           <br />
           <span>
-            <input onChange={handlsIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
+            <input onChange={handleIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
           </span>
           <p>Select all mods you want to use.</p>
           <div id="mod-selector">
@@ -130,7 +139,9 @@ const MainMenu = (props) => {
           <br />
           <input name="gameId" defaultValue="" maxLength={6} onChange={handleGameIdChanged} placeholder="Enter the game id" />
           <br />
-          <button onClick={joinMultiplayer} disabled={gameId.length !== 6}>Join Game</button>
+          <button onClick={joinMultiplayer} disabled={gameId.length !== 6}>
+            Join Game
+          </button>
           <button onClick={() => setScreen("multiplayer")}>Back</button>
         </div>
       )}
@@ -146,11 +157,19 @@ const MainMenu = (props) => {
           </select>
           <button onClick={refreshGames}>Refresh</button>
           <br />
-          <button onClick={joinMultiplayer} disabled={peerId === ""}>Join Game</button>
-          <button onClick={() => {setScreen("multiplayer"); setPeerId("")}}>Back</button>
+          <button onClick={joinMultiplayer} disabled={peerId === ""}>
+            Join Game
+          </button>
+          <button
+            onClick={() => {
+              setScreen("multiplayer");
+              setPeerId("");
+            }}>
+            Back
+          </button>
         </div>
       )}
-      
+
       {/* <button onClick={beginSingleplayer}>Single Player</button>
       <br />
       <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
@@ -177,7 +196,6 @@ const MainMenu = (props) => {
       </div>
       <br />
     </div> */}
-
     </div>
   );
 };

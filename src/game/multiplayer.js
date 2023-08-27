@@ -85,6 +85,10 @@ class Multiplayer {
     });
   }
 
+  async getPeerIdfromGameId(gameId) {
+    const id = await fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/games/${gameId}`, { mode: "cors", method: "GET" }).then((res) => res.json());
+    return id;
+  }
   closeListing = () => {
     clearInterval(getMultiplayer().refresh);
     fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/closeGame/${getMultiplayer().gameid}`, {
