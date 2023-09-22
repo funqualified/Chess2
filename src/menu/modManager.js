@@ -28,8 +28,9 @@ const ModManager = (props) => {
   const returnArray = [];
   Object.keys(GameTags).forEach(function (key, index) {
     returnArray.push(
-      <span key={key} title={GameTags[key]}>
-        <input onChange={handleCheckboxChange} type="checkbox" name="mods" value={GameTags[key]} /> <label> {convertToCapitalCase(key)}</label>
+      <span className="modItem" key={key} title={GameTags[key]}>
+        <input onChange={handleCheckboxChange} type="checkbox" name="mods" value={GameTags[key]} />{" "}
+        <label className="modLabel"> {convertToCapitalCase(key)}</label>
       </span>
     );
   });

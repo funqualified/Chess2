@@ -90,15 +90,25 @@ const MainMenu = (props) => {
       <Title />
       {screen === "mainmenu" && (
         <div className="menu">
-          <button onClick={() => setScreen("multiplayer")}>Multiplayer(Online)</button>
-          <button onClick={() => setScreen("singleplayer")}>VS CPU(random)</button>
+          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+            Multiplayer (Online)
+          </button>
+          <button className="button-53" onClick={() => setScreen("singleplayer")}>
+            VS CPU (random)
+          </button>
         </div>
       )}
       {screen === "multiplayer" && (
         <div className="menu">
-          <button onClick={() => setScreen("createGame")}>Create Game</button>
-          <button onClick={() => setScreen("joinGame")}>Join Game</button>
-          <button onClick={() => setScreen("mainmenu")}>Back</button>
+          <button className="button-53" onClick={() => setScreen("createGame")}>
+            Create Game
+          </button>
+          <button className="button-53" onClick={() => setScreen("joinGame")}>
+            Join Game
+          </button>
+          <button className="button-53" onClick={() => setScreen("mainmenu")}>
+            Back
+          </button>
         </div>
       )}
       {screen === "singleplayer" && (
@@ -107,13 +117,17 @@ const MainMenu = (props) => {
           <div id="mod-selector">
             <ModManager handleModsChanged={handleModsChanged} />
           </div>
-          <button onClick={beginSingleplayer}>Play</button>
-          <button onClick={() => setScreen("mainmenu")}>Back</button>
+          <button className="button-53" onClick={beginSingleplayer}>
+            Play
+          </button>
+          <button className="button-53" onClick={() => setScreen("mainmenu")}>
+            Back
+          </button>
         </div>
       )}
       {screen === "createGame" && (
         <div className="menu">
-          <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
+          <input className="menuInput" name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Username" />
           <br />
           <span>
             <input onChange={handleIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
@@ -122,32 +136,44 @@ const MainMenu = (props) => {
           <div id="mod-selector">
             <ModManager handleModsChanged={handleModsChanged} />
           </div>
-          <button onClick={hostMultiplayer}>Host Game</button>
-          <button onClick={() => setScreen("multiplayer")}>Back</button>
+          <button className="button-53" onClick={hostMultiplayer}>
+            Host Game
+          </button>
+          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+            Back
+          </button>
         </div>
       )}
       {screen === "joinGame" && (
         <div className="menu">
-          <button onClick={() => setScreen("joinPrivateGame")}>Join Private Game</button>
-          <button onClick={() => setScreen("joinPublicGame")}>Join Public Game</button>
-          <button onClick={() => setScreen("multiplayer")}>Back</button>
+          <button className="button-53" onClick={() => setScreen("joinPrivateGame")}>
+            Join Private Game
+          </button>
+          <button className="button-53" onClick={() => setScreen("joinPublicGame")}>
+            Join Public Game
+          </button>
+          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+            Back
+          </button>
         </div>
       )}
       {screen === "joinPrivateGame" && (
         <div className="menu">
-          <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
+          <input className="menuInput" name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Username" />
           <br />
-          <input name="gameId" defaultValue="" maxLength={6} onChange={handleGameIdChanged} placeholder="Enter the game id" />
+          <input className="menuInput" name="gameId" defaultValue="" maxLength={6} onChange={handleGameIdChanged} placeholder="Enter the game id" />
           <br />
-          <button onClick={joinMultiplayer} disabled={gameId.length !== 6}>
+          <button className="button-53" onClick={joinMultiplayer} disabled={gameId.length !== 6}>
             Join Game
           </button>
-          <button onClick={() => setScreen("multiplayer")}>Back</button>
+          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+            Back
+          </button>
         </div>
       )}
       {screen === "joinPublicGame" && (
         <div className="menu">
-          <select value={peerId} onChange={(e) => setPeerId(e.target.value)}>
+          <select className="menuInput" value={peerId} onChange={(e) => setPeerId(e.target.value)}>
             <option value="">Select a user to join</option>
             {openGames.map((game) => (
               <option key={game.id} value={game.peerid}>
@@ -155,12 +181,15 @@ const MainMenu = (props) => {
               </option>
             ))}
           </select>
-          <button onClick={refreshGames}>Refresh</button>
+          <button className="button-53" onClick={refreshGames}>
+            Refresh
+          </button>
           <br />
-          <button onClick={joinMultiplayer} disabled={peerId === ""}>
+          <button className="button-53" onClick={joinMultiplayer} disabled={peerId === ""}>
             Join Game
           </button>
           <button
+            className="button-53"
             onClick={() => {
               setScreen("multiplayer");
               setPeerId("");

@@ -9,6 +9,13 @@
   display: flex;
 }
 
+@media screen and (max-aspect-ratio: 1/1) {
+  .info-box {
+    width: 45%;
+    height: 95%;
+  }
+}
+
 .info-box > p {
   white-space: pre-line;
   color: black;
@@ -21,6 +28,21 @@
   width: 20%;
   height: 95vh;
   align-items: center;
+}
+
+@media screen and (max-aspect-ratio: 1/1) {
+  .info-container {
+    flex-direction: row;
+    width: 95vw;
+    height: 50%;
+  }
+
+  .info-container > button {
+    /* Force onto new line */
+    flex-wrap: wrap;
+    width: 90vw;
+    height: 10vh;
+  }
 }
 
 .info-container > button {
@@ -57,10 +79,11 @@ input[type="checkbox"] {
 }
 
 .menu > button {
-  height: 2.5em;
+  height: 3em;
   width: 90%;
   font-size: 2em;
   margin-bottom: 10px;
+  padding: 20px;
 }
 
 .menu.hide {
@@ -70,6 +93,13 @@ input[type="checkbox"] {
 .game {
   display: flex;
   flex-direction: row;
+}
+
+/* game flex diraction column if screen is taller than it is wide */
+@media screen and (max-aspect-ratio: 1/1) {
+  .game {
+    flex-direction: column;
+  }
 }
 
 .game.hide {
@@ -84,13 +114,28 @@ input[type="checkbox"] {
   touch-action: none;
 }
 
+@media screen and (max-aspect-ratio: 1/1) {
+  .board {
+    width: auto;
+  }
+}
+
 #mod-selector {
   height: 50%;
   flex-direction: column;
   display: flex;
   flex-wrap: wrap;
 
-  align-content: space-between;
+  align-content: center;
+}
+
+@media screen and (max-aspect-ratio: 1/1) {
+  #mod-selector {
+    height: auto;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+  }
 }
 
 body {
@@ -99,7 +144,7 @@ body {
 }
 
 h1 {
-  font-size: 72px;
+  font-size: 4em;
   background: -webkit-radial-gradient(50% 50%, farthest-corner, #ffc, #ffd700);
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -110,6 +155,12 @@ h1 {
 
   padding-right: 10%;
   padding-left: 10%;
+}
+
+@media screen and (max-aspect-ratio: 1/1) {
+  h1 {
+    font-size: 1em;
+  }
 }
 
 .bounce-title {
@@ -291,4 +342,97 @@ input[type="range"]#qt-slider::-ms-track {
   border: 1px solid #b2b2b2;
   box-shadow: none;
   box-sizing: border-box;
+}
+
+/* Menu */
+.button-53 {
+  background-color: hsl(66, 45%, 59%);
+  border: 0 solid #e5e7eb;
+  box-sizing: border-box;
+  color: #000000;
+  display: flex;
+  font-family: ui-sans-serif, system-ui, -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 1rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1.75rem;
+  padding: 0.75rem 1.65rem;
+  position: relative;
+  text-align: center;
+  text-decoration: none #000000 solid;
+  text-decoration-thickness: auto;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  cursor: pointer;
+  transform: rotate(-2deg);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin-top: 1rem;
+}
+
+.button-53:focus {
+  outline: 0;
+}
+
+.button-53:after {
+  content: "";
+  position: absolute;
+  border: 3px solid #000000;
+  bottom: 4px;
+  left: 4px;
+  width: calc(100% - 1px);
+  height: calc(100% - 1px);
+}
+
+.button-53:hover:after {
+  bottom: 2px;
+  left: 2px;
+  border: 3px dashed #000000;
+}
+
+@media (min-width: 768px) {
+  .button-53 {
+    padding: 0.75rem 3rem;
+    font-size: 1.25rem;
+  }
+}
+
+.menuInput {
+  transform: rotate(0.5deg);
+  width: 100%;
+  height: 2em;
+  border-radius: 5px;
+  margin-bottom: 1em;
+  padding-left: 0.5em;
+  font-size: 1.5em;
+
+  background-color: hsl(66, 45%, 59%);
+  border: #000000 solid 2px;
+  border-radius: 0;
+}
+
+.modItem {
+  transform: rotate(0.5deg);
+  height: 2em;
+  border-radius: 5px;
+  margin-bottom: 1em;
+  padding-left: 0.5em;
+}
+
+.modLabel {
+  transform: rotate(0deg) translate(0, 0em);
+  transition: transform 0.1s;
+  color: #dddddd;
+  display: inline-block;
+  /*move the label down*/
+
+  margin-right: 1.5em;
+}
+
+input:checked + .modLabel {
+  transform: rotate(10deg) translate(0, 0.5em);
+  transition: transform 0.2s;
 }
