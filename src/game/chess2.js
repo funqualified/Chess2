@@ -191,7 +191,7 @@ class Piece {
       }
 
       //Remove castling rights if rook moves, using chess960 rules
-      if (this.startingIndex[1] < kingIndex[1]) {
+      if (kingIndex != null && this.startingIndex[1] < kingIndex[1]) {
         game.castling = game.castling.replace(this.color === "white" ? "Q" : "q", "");
       } else {
         game.castling = game.castling.replace(this.color === "white" ? "K" : "k", "");
