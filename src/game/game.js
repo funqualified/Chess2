@@ -22,7 +22,6 @@ const Game = (props) => {
     }
   }, [navigate, props.multiplayer]);
 
-  const [fen, setFen] = useState("");
   const [gameInfo, setGameInfo] = useState("");
   const [pieceInfo, setPieceInfo] = useState("");
   const [selectedSquare, setSelectedSquare] = useState("");
@@ -45,7 +44,7 @@ const Game = (props) => {
   }
 
   async function makeRandomMove() {
-    var possibleMoves = Chess().moves("black");
+    var possibleMoves = Chess().playerMoves("black");
 
     // game over
     if (possibleMoves.length === 0) return;
@@ -57,19 +56,11 @@ const Game = (props) => {
     updateUI();
   }
 
-  function indexToAlgebraic(index) {
-    return String.fromCharCode(index[1] + 97) + Math.abs(index[0] - 8);
-  }
-
-  function algebraicToIndex(algebraic) {
-    return [8 - algebraic.charAt(1), algebraic.charCodeAt(0) - 97];
-  }
-
   async function onDrop(piece, target) {
     //create drag object
     var drag = {
-      sourceSquare: indexToAlgebraic(piece.getIndex(Chess().board)),
-      targetSquare: indexToAlgebraic([target.row, target.col]),
+      sourceSquare: piece.getIndex(Chess().board),
+      targetSquare: { row: target.row, col: target.col },
     };
     // see if the move is legal
     var move = await Chess().move(drag);
@@ -109,24 +100,23 @@ const Game = (props) => {
 
   function greySquareMoves(piece) {
     var index = piece.getIndex(Chess().board);
-    var square = indexToAlgebraic(index);
     // get list of possible moves for this square
-    var moves = Chess().moves(square, true);
+    var moves = Chess().moves(index, true);
 
     var squaresToHighlight = [];
-    squaresToHighlight.push({ row: index[0], col: index[1] });
+    squaresToHighlight.push(index);
 
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {
-      var index = algebraicToIndex(moves[i].to);
-      squaresToHighlight.push({ row: index[0], col: index[1] });
+      var index = moves[i].to;
+      squaresToHighlight.push(index);
     }
 
     setMoveHighlights(squaresToHighlight);
   }
 
   function removeHightlighSquares() {
-    setMoveHighlights({});
+    setMoveHighlights([]);
   }
 
   function fogSquares(squares) {
@@ -142,22 +132,8 @@ const Game = (props) => {
     setFogHighlights({ ...newHighlights });
   }
 
-  function hightlighSquares(squares) {
-    const newHighlights = squares.reduce((a, c) => {
-      return {
-        ...a,
-        [c]: {
-          background: "#88888888",
-        },
-      };
-    }, {});
-
-    setMoveHighlights({ ...newHighlights });
-  }
-
   function updateUI() {
     fogSquares(Chess().fog());
-    setFen(Chess().fen());
     setGameInfo(Chess().getGameInfo());
   }
 
@@ -180,8 +156,8 @@ const Game = (props) => {
       <div className="board">
         <Chessboard
           onMouseOverSquare={selectSquare}
-          onDragStart={onDragStart}
           onMouseoutSquare={onMouseoutSquare}
+          onDragStart={onDragStart}
           onDrop={onDrop}
           highlightedSquares={moveHighlights}
         />

@@ -39,7 +39,7 @@ class Piece {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
         if (board[i][j] === this) {
-          return [i, j];
+          return { row: i, col: j };
         }
       }
     }
@@ -53,8 +53,7 @@ class Piece {
       } else {
         this.loyalty += 1;
         moves.forEach((move) => {
-          const index = algebraicToIndex(move.to);
-          if (game.board[index[0]][index[1]] === this) {
+          if (game.board[move.to.row][move.to.col] === this) {
             this.loyalty -= 2;
           }
         });
@@ -69,7 +68,7 @@ class Piece {
     }
 
     var index = this.getIndex(game.board);
-    if (this.canPromote && ((this.color === "white" && index[0] === 0) || (this.color === "black" && index[0] === 7))) {
+    if (this.canPromote && ((this.color === "white" && index.row === 0) || (this.color === "black" && index.row === 7))) {
       if (game.mods.includes("QTE_PROMOTION")) {
         if (this.color !== game.playerColor) {
           var value = Math.random() * 51;
@@ -87,13 +86,13 @@ class Piece {
           fen = "r";
         }
         if (fen === null) {
-          game.board[index[0]][index[1]] = null;
+          game.board[index.row][index.col] = null;
         } else {
-          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
+          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       } else {
         if (this.color !== game.playerColor) {
-          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
+          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
           var fen = defaultAction
             ? "q"
@@ -103,7 +102,7 @@ class Piece {
                 { label: "Bishop", response: "b" },
                 { label: "Knight", response: "n" },
               ]);
-          game.board[index[0]][index[1]] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
+          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       }
     }
@@ -114,11 +113,11 @@ class Piece {
     if (
       !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
-      indexToAlgebraic(move.from) === indexToAlgebraic(this.startingIndex) &&
-      Math.abs(move.to[0] - this.startingIndex[0]) === 2 &&
-      move.from[1] == move.to[1]
+      JSON.stringify(move.from) === JSON.stringify(this.startingIndex) &&
+      Math.abs(move.to.row - this.startingIndex.row) === 2 &&
+      move.from.col == move.to.col
     ) {
-      game.enPassant = indexToAlgebraic([Math.min(move.from[0], move.to[0]) + 1, move.from[1]]);
+      game.enPassant = { row: Math.min(move.from.row, move.to.row) + 1, col: move.from.col };
       game.justDoubleMovedPawn = true;
     }
 
@@ -126,12 +125,12 @@ class Piece {
     if (
       !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
-      indexToAlgebraic(move.to) === game.enPassant &&
-      Math.abs(move.from[0] - move.to[0]) === 1 &&
-      Math.abs(move.from[1] - move.to[1]) === 1
+      JSON.stringify(move.to) === JSON.stringify(game.enPassant) &&
+      Math.abs(move.from.row - move.to.row) === 1 &&
+      Math.abs(move.from.col - move.to.col) === 1
     ) {
-      game.board[move.from[0]][move.to[1]] = null;
-      game.board[move.to[0]][move.to[1]] = this;
+      game.board[move.from.row][move.to.col] = null;
+      game.board[move.to.row][move.to.col] = this;
       return true;
     }
 
@@ -147,35 +146,35 @@ class Piece {
       }
 
       //Castling
-      const targetPiece = game.board[move.to[0]][move.to[1]];
+      const targetPiece = game.board[move.to.row][move.to.col];
       if (targetPiece && targetPiece.fenId.toUpperCase() === "R" && targetPiece.color === this.color) {
         //move king and rook to correct positions
-        game.board[move.from[0]][move.from[1]] = null;
-        game.board[move.to[0]][move.to[1]] = null;
-        if (move.to[1] > move.from[1]) {
-          game.board[move.to[0]][5] = targetPiece;
-          game.board[move.to[0]][6] = this;
+        game.board[move.from.row][move.from.col] = null;
+        game.board[move.to.row][move.to.col] = null;
+        if (move.to.col > move.from.col) {
+          game.board[move.to.row][5] = targetPiece;
+          game.board[move.to.row][6] = this;
         } else {
-          game.board[move.to[0]][3] = targetPiece;
-          game.board[move.to[0]][2] = this;
+          game.board[move.to.row][3] = targetPiece;
+          game.board[move.to.row][2] = this;
         }
         return true;
       }
     }
 
-    if (!game.isCopy && this.moveTypes.includes("rook") && move.from[1] == this.startingIndex[1]) {
+    if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col == this.startingIndex.col) {
       //get king index
       var kingIndex = null;
       for (let i = 0; i < game.board.length; i++) {
         for (let j = 0; j < game.board[i].length; j++) {
           if (game.board[i][j] && game.board[i][j].fenId.toUpperCase() === "K" && game.board[i][j].color === this.color) {
-            kingIndex = [i, j];
+            kingIndex = { row: i, col: j };
           }
         }
       }
 
       //Remove castling rights if rook moves, using chess960 rules
-      if (kingIndex != null && this.startingIndex[1] < kingIndex[1]) {
+      if (kingIndex != null && this.startingIndex.col < kingIndex.col) {
         game.castling = game.castling.replace(this.color === "white" ? "Q" : "q", "");
       } else {
         game.castling = game.castling.replace(this.color === "white" ? "K" : "k", "");
@@ -255,43 +254,51 @@ class Piece {
     }
 
     if (this.color === "white") {
-      if (source[1] === target[1]) {
-        if (source[0] - target[0] === 2 && source[0] === 6 && !targetPiece && !game.board[source[0] - 1][source[1]]) {
+      if (source.col === target.col) {
+        if (source.row - target.row === 2 && source.row === 6 && !targetPiece && !game.board[source.row - 1][source.col]) {
           // Pawn moves 2 spaces on its first move
           return true;
-        } else if (source[0] - target[0] === 1 && !targetPiece) {
+        } else if (source.row - target.row === 1 && !targetPiece) {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (Math.abs(source[1] - target[1]) === 1 && source[0] - target[0] === 1 && (!!targetPiece || game.enPassant === indexToAlgebraic(target))) {
+      } else if (
+        Math.abs(source.col - target.col) === 1 &&
+        source.row - target.row === 1 &&
+        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target))
+      ) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes("WRAP") &&
-        source[0] - target[0] === 1 &&
-        (!!targetPiece || game.enPassant === indexToAlgebraic(target)) &&
-        ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
+        source.row - target.row === 1 &&
+        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target)) &&
+        ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
       ) {
         //Pawn captures diagonally over wrap
         return true;
       }
     } else {
-      if (source[1] === target[1]) {
-        if (source[0] - target[0] === -2 && source[0] === 1 && !targetPiece && !game.board[source[0] + 1][source[1]]) {
+      if (source.col === target.col) {
+        if (source.row - target.row === -2 && source.row === 1 && !targetPiece && !game.board[source.row + 1][source.col]) {
           // Pawn moves 2 spaces on its first move
           return true;
-        } else if (source[0] - target[0] === -1 && !targetPiece) {
+        } else if (source.row - target.row === -1 && !targetPiece) {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (Math.abs(source[1] - target[1]) === 1 && source[0] - target[0] === -1 && (!!targetPiece || game.enPassant === indexToAlgebraic(target))) {
+      } else if (
+        Math.abs(source.col - target.col) === 1 &&
+        source.row - target.row === -1 &&
+        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target))
+      ) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes("WRAP") &&
-        source[0] - target[0] === -1 &&
-        (!!targetPiece || game.enPassant === indexToAlgebraic(target)) &&
-        ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
+        source.row - target.row === -1 &&
+        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target)) &&
+        ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
       ) {
         //Pawn captures diagonally over wrap
         return true;
@@ -306,15 +313,15 @@ class Piece {
     }
 
     if (
-      (Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === 1) ||
-      (Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === 2)
+      (Math.abs(source.row - target.row) === 2 && Math.abs(source.col - target.col) === 1) ||
+      (Math.abs(source.row - target.row) === 1 && Math.abs(source.col - target.col) === 2)
     ) {
       // Knight moves in L shape
       return true;
     }
     if (
-      (game.mods.includes("WRAP") && Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
-      (game.mods.includes("WRAP") && Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
+      (game.mods.includes("WRAP") && Math.abs(source.row - target.row) === 2 && Math.abs(source.col - target.col) === game.board[source.row].length - 1) ||
+      (game.mods.includes("WRAP") && Math.abs(source.row - target.row) === 1 && Math.abs(source.col - target.col) === game.board[source.row].length - 2)
     ) {
       return true;
     }
@@ -326,20 +333,20 @@ class Piece {
       return false;
     }
 
-    if (source[0] === target[0]) {
-      const minRow = Math.min(source[1], target[1]);
-      const maxRow = Math.max(source[1], target[1]);
+    if (source.row === target.row) {
+      const minRow = Math.min(source.col, target.col);
+      const maxRow = Math.max(source.col, target.col);
       for (let i = minRow + 1; i < maxRow; i++) {
-        if (game.board[source[0]][i]) {
+        if (game.board[source.row][i]) {
           if (game.mods.includes("WRAP")) {
             for (let o = maxRow + 1; o !== minRow; o++) {
-              if (o >= game.board[source[0]].length) {
+              if (o >= game.board[source.row].length) {
                 o = 0;
                 if (minRow === o) {
                   return true;
                 }
               }
-              if (game.board[source[0]][o]) {
+              if (game.board[source.row][o]) {
                 return false;
               }
             }
@@ -358,12 +365,12 @@ class Piece {
       return false;
     }
 
-    if (source[1] === target[1]) {
+    if (source.col === target.col) {
       // Rook moves vertically
-      const minCol = Math.min(source[0], target[0]);
-      const maxCol = Math.max(source[0], target[0]);
+      const minCol = Math.min(source.row, target.row);
+      const maxCol = Math.max(source.row, target.row);
       for (let j = minCol + 1; j < maxCol; j++) {
-        if (game.board[j][source[1]]) {
+        if (game.board[j][source.col]) {
           return false;
         }
       }
@@ -377,24 +384,24 @@ class Piece {
       return false;
     }
 
-    if (Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1])) {
+    if (Math.abs(source.row - target.row) === Math.abs(source.col - target.col)) {
       // Bishop moves diagonally
-      const startRow = source[1];
-      const startCol = source[0];
+      const startRow = source.col;
+      const startCol = source.row;
       let colIncrement = 1;
       let rowIncrement = 1;
 
-      if (source[0] > target[0]) {
+      if (source.row > target.row) {
         colIncrement = -1; // moving from bottom-right to top-left or vice versa
       }
 
-      if (source[1] > target[1]) {
+      if (source.col > target.col) {
         rowIncrement = -1;
       }
       let canAccessNormal = true;
       for (
         let i = startRow + rowIncrement, j = startCol + colIncrement;
-        (rowIncrement > 0 ? i < target[1] : i > target[1]) && (colIncrement > 0 ? j < target[0] : j > target[0]);
+        (rowIncrement > 0 ? i < target.col : i > target.col) && (colIncrement > 0 ? j < target.row : j > target.row);
         i += rowIncrement, j += colIncrement
       ) {
         if (game.board[j][i]) {
@@ -407,20 +414,20 @@ class Piece {
     }
     if (
       game.mods.includes("WRAP") &&
-      (Math.abs(source[0] - target[0] + 8) === Math.abs(source[1] - target[1]) ||
-        Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1] + 8) ||
-        Math.abs(source[0] - target[0] - 8) === Math.abs(source[1] - target[1]) ||
-        Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1] - 8))
+      (Math.abs(source.row - target.row + 8) === Math.abs(source.col - target.col) ||
+        Math.abs(source.row - target.row) === Math.abs(source.col - target.col + 8) ||
+        Math.abs(source.row - target.row - 8) === Math.abs(source.col - target.col) ||
+        Math.abs(source.row - target.row) === Math.abs(source.col - target.col - 8))
     ) {
-      if (source[0] < target[0] && source[1] > target[1]) {
+      if (source.row < target.row && source.col > target.col) {
         //UR
-        for (let x = source[0] + 1, y = source[1] + 1; x !== target[0] && y !== target[1]; x++, y++) {
+        for (let x = source.row + 1, y = source.col + 1; x !== target.row && y !== target.col; x++, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
-          if (y >= game.board[source[0]].length) {
+          if (y >= game.board[source.row].length) {
             y = 0;
-            if (x === target[0] && y === target[1]) {
+            if (x === target.row && y === target.col) {
               return true;
             }
           }
@@ -429,15 +436,15 @@ class Piece {
           }
         }
         return true;
-      } else if (source[0] < target[0] && source[1] < target[1]) {
+      } else if (source.row < target.row && source.col < target.col) {
         //UL
-        for (let x = source[0] + 1, y = source[1] - 1; x !== target[0] && y !== target[1]; x++, y--) {
+        for (let x = source.row + 1, y = source.col - 1; x !== target.row && y !== target.col; x++, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y < 0) {
-            y = game.board[source[0]].length - 1;
-            if (x === target[0] && y === target[1]) {
+            y = game.board[source.row].length - 1;
+            if (x === target.row && y === target.col) {
               return true;
             }
           }
@@ -446,15 +453,15 @@ class Piece {
           }
         }
         return true;
-      } else if (source[0] > target[0] && source[1] < target[1]) {
+      } else if (source.row > target.row && source.col < target.col) {
         //DL
-        for (let x = source[0] - 1, y = source[1] - 1; x !== target[0] && y !== target[1]; x--, y--) {
+        for (let x = source.row - 1, y = source.col - 1; x !== target.row && y !== target.col; x--, y--) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
           if (y < 0) {
-            y = game.board[source[0]].length - 1;
-            if (x === target[0] && y === target[1]) {
+            y = game.board[source.row].length - 1;
+            if (x === target.row && y === target.col) {
               return true;
             }
           }
@@ -463,15 +470,15 @@ class Piece {
           }
         }
         return true;
-      } else if (source[0] > target[0] && source[1] > target[1]) {
+      } else if (source.row > target.row && source.col > target.col) {
         //DR
-        for (let x = source[0] - 1, y = source[1] + 1; x !== target[0] && y !== target[1]; x--, y++) {
+        for (let x = source.row - 1, y = source.col + 1; x !== target.row && y !== target.col; x--, y++) {
           if (x >= game.board.length || x < 0) {
             return false;
           }
-          if (y >= game.board[source[0]].length) {
+          if (y >= game.board[source.row].length) {
             y = 0;
-            if (x === target[0] && y === target[1]) {
+            if (x === target.row && y === target.col) {
               return true;
             }
           }
@@ -487,7 +494,7 @@ class Piece {
   }
 
   kingMove(source, target, targetPiece, game) {
-    if (Math.abs(source[0] - target[0]) <= 1 && Math.abs(source[1] - target[1]) <= 1) {
+    if (Math.abs(source.row - target.row) <= 1 && Math.abs(source.col - target.col) <= 1) {
       if (!!targetPiece && this.color === targetPiece.color) {
         return false;
       }
@@ -499,23 +506,23 @@ class Piece {
       targetPiece.fenId &&
       targetPiece.fenId.toUpperCase() === "R" &&
       targetPiece.color === this.color &&
-      game.castling.includes(source[1] < target[1] ? (this.color === "white" ? "K" : "k") : this.color === "white" ? "Q" : "q")
+      game.castling.includes(source.col < target.col ? (this.color === "white" ? "K" : "k") : this.color === "white" ? "Q" : "q")
     ) {
       //Check if there is an obstruction between the king and rook and the end spaces
-      const kingEndCol = source[1] < target[1] ? 6 : 2;
-      const rookEndCol = source[1] < target[1] ? 5 : 3;
-      const minCol = Math.min(source[1], target[1], kingEndCol, rookEndCol);
-      const maxCol = Math.max(source[1], target[1], kingEndCol, rookEndCol);
+      const kingEndCol = source.col < target.col ? 6 : 2;
+      const rookEndCol = source.col < target.col ? 5 : 3;
+      const minCol = Math.min(source.col, target.col, kingEndCol, rookEndCol);
+      const maxCol = Math.max(source.col, target.col, kingEndCol, rookEndCol);
       for (let j = minCol; j <= maxCol; j++) {
-        if (game.board[source[0]][j] && game.board[source[0]][j] !== this && game.board[source[0]][j] !== targetPiece) {
+        if (game.board[source.row][j] && game.board[source.row][j] !== this && game.board[source.row][j] !== targetPiece) {
           return false;
         }
       }
       // Check if there is a check between the king start and end spaces
-      const minCol2 = Math.min(source[1], kingEndCol);
-      const maxCol2 = Math.max(source[1], kingEndCol);
+      const minCol2 = Math.min(source.col, kingEndCol);
+      const maxCol2 = Math.max(source.col, kingEndCol);
       for (let j = minCol2; j <= maxCol2; j++) {
-        if (game.isCheck(this.color, [source[0], j], game.board)) {
+        if (game.isCheck(this.color, [source.row, j], game.board)) {
           return false;
         }
       }
@@ -527,8 +534,8 @@ class Piece {
         return false;
       }
       if (
-        (Math.abs(source[0] - target[0]) <= 1 && source[1] === 0 && target[1] === game.board[target[0]].length - 1) ||
-        (source[1] === game.board[source[1]].length - 1 && target[1] === 0)
+        (Math.abs(source.row - target.row) <= 1 && source.col === 0 && target.col === game.board[target.row].length - 1) ||
+        (source.col === game.board[source.col].length - 1 && target.col === 0)
       ) {
         // King moves 1 space in any direction over wrap
         return true;
@@ -536,14 +543,6 @@ class Piece {
     }
     return false;
   }
-}
-
-function algebraicToIndex(algebraic) {
-  return [8 - algebraic.charAt(1), algebraic.charCodeAt(0) - 97];
-}
-
-function indexToAlgebraic(index) {
-  return String.fromCharCode(index[1] + 97) + Math.abs(index[0] - 8);
 }
 
 class Chess {
@@ -615,7 +614,7 @@ class Chess {
         const char = rows[i][j];
 
         if (isNaN(char)) {
-          row.push(pieceFactory(char, [i, j]));
+          row.push(pieceFactory(char, { row: i, col: j }));
         } else {
           for (let o = 0; o < parseInt(char); o++) {
             row.push(null);
@@ -688,14 +687,13 @@ class Chess {
   }
 
   getPieceInfo(square) {
-    const index = algebraicToIndex(square);
-    const piece = this.board[index[0]][index[1]];
+    const piece = this.board[square.row][square.col];
     if (piece) {
       if (this.mods.includes("FOG")) {
-        let sight = this.moves(this.playerColor).map((move) => {
-          return algebraicToIndex(move.to).toString();
+        let sight = this.playerMoves(this.playerColor).map((move) => {
+          return JSON.stringify(move.to);
         });
-        if (sight.includes(index?.toString()) || piece.color === this.playerColor) {
+        if (sight.includes(JSON.stringify(square)) || piece.color === this.playerColor) {
           return piece.info(this);
         }
         return null;
@@ -722,7 +720,7 @@ class Chess {
         for (let j = 0; j < this.board[i].length; j++) {
           const piece = this.board[i][j];
           if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
+            if (piece.color.charAt(0) === this.turn && this.moves({ row: i, col: j }).length > 0) {
               hasValidMove = true;
             }
             if (piece.color.charAt(0) === "w") {
@@ -753,9 +751,8 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color.charAt(0) === this.turn) {
-          this.moves(indexToAlgebraic([i, j])).forEach((move) => {
-            var to = algebraicToIndex(move.to);
-            var target = this.board[to[0]][to[1]];
+          this.moves({ row: i, col: j }).forEach((move) => {
+            var target = this.board[move.to.row][move.to.col];
             hasValidMove = true;
             if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
               winner = piece.color;
@@ -772,40 +769,19 @@ class Chess {
     return winner;
   }
 
-  moves(from, playerVisable = false) {
+  playerMoves(color, playerVisable = false) {
     let moves = [];
-
-    if (from?.length === 2) {
-      let sight = this.moves(this.playerColor).map((move) => {
-        return algebraicToIndex(move.to).toString();
-      });
-      const index = algebraicToIndex(from);
-      const piece = this.board[index[0]][index[1]];
-      if (!playerVisable || !this.mods.includes("FOG") || sight.includes(index?.toString()) || piece?.color === this.playerColor) {
-        for (let x = 0; x < this.board.length; x++) {
-          for (let y = 0; y < this.board[x].length; y++) {
-            if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
-              moves.push({
-                from: from,
-                to: indexToAlgebraic([x, y]),
-              });
-            }
-          }
-        }
-        return moves;
-      }
-    }
 
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
-        if (!!piece && (from === "" || !from || from === piece.color)) {
+        if (!!piece && (color === "" || !color || color === piece.color)) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
-              if (this.isLegalMove(indexToAlgebraic([i, j]), indexToAlgebraic([x, y]))) {
+              if (this.isLegalMove({ row: i, col: j }, { row: x, col: y })) {
                 moves.push({
-                  from: indexToAlgebraic([i, j]),
-                  to: indexToAlgebraic([x, y]),
+                  from: { row: i, col: j },
+                  to: { row: x, col: y },
                 });
               }
             }
@@ -813,6 +789,30 @@ class Chess {
         }
       }
     }
+    return moves;
+  }
+
+  moves(from, playerVisable = false) {
+    let moves = [];
+
+    let sight = this.playerMoves(this.playerColor).map((move) => {
+      return JSON.stringify(move.to);
+    });
+    const piece = this.board[from.row][from.col];
+    if (!playerVisable || !this.mods.includes("FOG") || sight.includes(JSON.stringify(from)) || piece?.color === this.playerColor) {
+      for (let x = 0; x < this.board.length; x++) {
+        for (let y = 0; y < this.board[x].length; y++) {
+          if (this.isLegalMove(from, { row: x, col: y })) {
+            moves.push({
+              from: from,
+              to: { row: x, col: y },
+            });
+          }
+        }
+      }
+      return moves;
+    }
+
     return moves;
   }
 
@@ -824,7 +824,7 @@ class Chess {
       for (let j = 0; j < board[i].length; j++) {
         const piece = board[i][j];
         if (piece !== null && piece.color === enemyColor) {
-          if (piece.isLegalMove([i, j], kingIndex, board, this)) {
+          if (piece.isLegalMove({ row: i, col: j }, kingIndex, board, this)) {
             return true;
           }
         }
@@ -845,7 +845,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         if (this.board[i][j] !== null && this.board[i][j].color === color && this.board[i][j].fenId.toLowerCase() === "k") {
           king = this.board[i][j];
-          kingIndex = [i, j];
+          kingIndex = { row: i, col: j };
           break;
         }
       }
@@ -865,7 +865,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color === enemyColor) {
-          if (piece.isLegalMove([i, j], kingIndex, this.board, this)) {
+          if (piece.isLegalMove({ row: i, col: j }, kingIndex, this.board, this)) {
             return true;
           }
         }
@@ -878,10 +878,10 @@ class Chess {
   //Creates a copy of the entire game and simulates the move on the copy
   simulateMove(from, to) {
     const copy = this.copy();
-    const source = algebraicToIndex(from);
-    const target = algebraicToIndex(to);
-    const piece = copy.board[source[0]][source[1]];
-    const targetPiece = copy.board[target[0]][target[1]];
+    const source = from;
+    const target = to;
+    const piece = copy.board[source.row][source.col];
+    const targetPiece = copy.board[target.row][target.col];
 
     piece.move(copy, { from: source, to: target });
 
@@ -899,18 +899,18 @@ class Chess {
       });
     }
 
-    copy.board[source[0]][source[1]] = null;
-    copy.board[target[0]][target[1]] = piece;
+    copy.board[source.row][source.col] = null;
+    copy.board[target.row][target.col] = piece;
     copy.endTurn(true);
 
     return copy;
   }
 
   isLegalMove(from, to) {
-    const source = algebraicToIndex(from);
-    const target = algebraicToIndex(to);
-    const piece = this.board[source[0]][source[1]];
-    const targetPiece = this.board[target[0]][target[1]];
+    const source = from;
+    const target = to;
+    const piece = this.board[source.row][source.col];
+    const targetPiece = this.board[target.row][target.col];
 
     if (!piece) {
       return false;
@@ -943,7 +943,7 @@ class Chess {
       return;
     }
 
-    const moves = this.moves();
+    const moves = this.playerMoves();
     for (let x = 0; x < this.board.length; x++) {
       for (let y = 0; y < this.board[x].length; y++) {
         await this.board[x][y]?.endOfTurn(this, moves, simulatedMove);
@@ -956,7 +956,7 @@ class Chess {
         for (let j = 0; j < this.board[i].length; j++) {
           const piece = this.board[i][j];
           if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves(indexToAlgebraic([i, j])).length > 0) {
+            if (piece.color.charAt(0) === this.turn && this.moves({ row: i, col: j }).length > 0) {
               hasValidMove = true;
             }
           }
@@ -975,8 +975,8 @@ class Chess {
 
   fog() {
     if (this.mods.includes("FOG")) {
-      let sight = this.moves(this.playerColor).map((move) => {
-        return algebraicToIndex(move.to).toString();
+      let sight = this.playerMoves(this.playerColor).map((move) => {
+        return JSON.stringify(move.to);
       });
 
       let fogArr = [];
@@ -984,7 +984,7 @@ class Chess {
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[i].length; j++) {
           if (!sight.includes(`${i},${j}`) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
-            fogArr.push(indexToAlgebraic([i, j]));
+            fogArr.push({ row: i, col: j });
           }
         }
       }
@@ -992,82 +992,6 @@ class Chess {
     }
 
     return [];
-  }
-
-  fenFow() {
-    let fen = "";
-    let emptySquares = 0;
-    let sight = this.moves(this.playerColor).map((move) => {
-      return algebraicToIndex(move.to).toString();
-    });
-
-    for (let i = 0; i < this.board.length; i++) {
-      if (i !== 0) {
-        fen += "/";
-      }
-
-      for (let j = 0; j < this.board[i].length; j++) {
-        const piece = this.board[i][j];
-
-        if (piece && (piece.color === this.playerColor || sight.includes([i, j].toString()))) {
-          if (emptySquares) {
-            fen += emptySquares;
-            emptySquares = 0;
-          }
-
-          fen += piece.fen();
-        } else {
-          emptySquares++;
-        }
-      }
-
-      if (emptySquares) {
-        fen += emptySquares;
-        emptySquares = 0;
-      }
-    }
-
-    fen += ` ${this.turn} ${this.castling} ${this.enPassant} 0 1`;
-
-    return fen;
-  }
-
-  fen() {
-    if (this.mods.includes("FOG") && !this.game_over()) {
-      return this.fenFow();
-    }
-    let fen = "";
-    let emptySquares = 0;
-
-    for (let i = 0; i < this.board.length; i++) {
-      if (i !== 0) {
-        fen += "/";
-      }
-
-      for (let j = 0; j < this.board[i].length; j++) {
-        const piece = this.board[i][j];
-
-        if (piece) {
-          if (emptySquares) {
-            fen += emptySquares;
-            emptySquares = 0;
-          }
-
-          fen += piece.fen();
-        } else {
-          emptySquares++;
-        }
-      }
-
-      if (emptySquares) {
-        fen += emptySquares;
-        emptySquares = 0;
-      }
-    }
-
-    fen += ` ${this.turn} ${this.castling} ${this.enPassant} 0 1`;
-
-    return fen;
   }
 
   async move(move) {
@@ -1078,10 +1002,10 @@ class Chess {
       delete gamestate.history;
       this.history.push(gamestate);
 
-      const source = [8 - move.sourceSquare.charAt(1), move.sourceSquare.charCodeAt(0) - 97];
-      const target = [8 - move.targetSquare.charAt(1), move.targetSquare.charCodeAt(0) - 97];
-      const targetPiece = this.board[target[0]][target[1]];
-      const piece = this.board[source[0]][source[1]];
+      const source = move.sourceSquare;
+      const target = move.targetSquare;
+      const targetPiece = this.board[target.row][target.col];
+      const piece = this.board[source.row][source.col];
 
       const moveHandled = piece.move(this, { from: source, to: target });
 
@@ -1100,8 +1024,8 @@ class Chess {
       }
 
       if (!moveHandled) {
-        this.board[source[0]][source[1]] = null;
-        this.board[target[0]][target[1]] = piece;
+        this.board[source.row][source.col] = null;
+        this.board[target.row][target.col] = piece;
       }
       await this.endTurn();
     }

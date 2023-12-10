@@ -62,6 +62,7 @@ const Chessboard = (props) => {
                   className={squareClasses(rowIndex, squareIndex)}
                   key={squareIndex}
                   onMouseOver={() => props.onMouseOverSquare(square)}
+                  onMouseOut={() => props.onMouseoutSquare(square)}
                   onDrop={(e) => onDragEnd(e, heldPiece, rowIndex, squareIndex)}
                   onDragOver={(e) => e.preventDefault()}>
                   {square ? (
