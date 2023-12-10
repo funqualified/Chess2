@@ -26,7 +26,7 @@ const Game = (props) => {
   const [gameInfo, setGameInfo] = useState("");
   const [pieceInfo, setPieceInfo] = useState("");
   const [selectedSquare, setSelectedSquare] = useState("");
-  const [moveHighlights, setMoveHighlights] = useState({});
+  const [moveHighlights, setMoveHighlights] = useState([]);
   const [fogHighlights, setFogHighlights] = useState({});
 
   if (!Chess().initialized) {
@@ -59,6 +59,10 @@ const Game = (props) => {
 
   function indexToAlgebraic(index) {
     return String.fromCharCode(index[1] + 97) + Math.abs(index[0] - 8);
+  }
+
+  function algebraicToIndex(algebraic) {
+    return [8 - algebraic.charAt(1), algebraic.charCodeAt(0) - 97];
   }
 
   async function onDrop(piece, target) {
@@ -95,7 +99,7 @@ const Game = (props) => {
       setPieceInfo(info);
     }
 
-    // greySquareMoves(square);
+    greySquareMoves(square);
   }
 
   function onMouseoutSquare(square) {
@@ -103,20 +107,22 @@ const Game = (props) => {
     setPieceInfo("");
   }
 
-  function greySquareMoves(square) {
-    console.trace();
+  function greySquareMoves(piece) {
+    var index = piece.getIndex(Chess().board);
+    var square = indexToAlgebraic(index);
     // get list of possible moves for this square
     var moves = Chess().moves(square, true);
 
     var squaresToHighlight = [];
-    squaresToHighlight.push(square);
+    squaresToHighlight.push({ row: index[0], col: index[1] });
 
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {
-      squaresToHighlight.push(moves[i].to);
+      var index = algebraicToIndex(moves[i].to);
+      squaresToHighlight.push({ row: index[0], col: index[1] });
     }
 
-    hightlighSquares(squaresToHighlight);
+    setMoveHighlights(squaresToHighlight);
   }
 
   function removeHightlighSquares() {
@@ -172,7 +178,13 @@ const Game = (props) => {
     <div id="game-space" className="game">
       {props.multiplayer ? <ConnectionIndicator /> : ""}
       <div className="board">
-        <Chessboard onMouseOverSquare={selectSquare} onDragStart={onDragStart} onMouseoutSquare={onMouseoutSquare} onDrop={onDrop} />
+        <Chessboard
+          onMouseOverSquare={selectSquare}
+          onDragStart={onDragStart}
+          onMouseoutSquare={onMouseoutSquare}
+          onDrop={onDrop}
+          highlightedSquares={moveHighlights}
+        />
       </div>
       <div className="info-container">
         <div id="space-details" className="info-box">

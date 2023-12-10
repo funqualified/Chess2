@@ -33,6 +33,24 @@ const Chessboard = (props) => {
     setHeldPiece(null);
   }
 
+  function squareClasses(rowIndex, colIndex) {
+    let classes = "square ";
+    classes += (colIndex - rowIndex) % 2 === 0 ? "light" : "dark";
+
+    if (!props.highlightedSquares) return classes;
+
+    // if the highlighted squares includes an object with the row and col of the current square, add the highlight class
+    if (
+      props.highlightedSquares &&
+      props.highlightedSquares.some((square) => {
+        return square.row === rowIndex && square.col === colIndex;
+      })
+    ) {
+      classes += " highlight";
+    }
+    return classes;
+  }
+
   return (
     <div id="board">
       {Chess().board.map((row, rowIndex) => {
@@ -41,7 +59,7 @@ const Chessboard = (props) => {
             {row.map((square, squareIndex) => {
               return (
                 <div
-                  className={`square ${(squareIndex - rowIndex) % 2 === 0 ? "light" : "dark"}`}
+                  className={squareClasses(rowIndex, squareIndex)}
                   key={squareIndex}
                   onMouseOver={() => props.onMouseOverSquare(square)}
                   onDrop={(e) => onDragEnd(e, heldPiece, rowIndex, squareIndex)}

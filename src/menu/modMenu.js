@@ -16,9 +16,8 @@ const ModMenu = (props) => {
     return str;
   }
 
-  function spiciness(){
+  function spiciness() {
     let spice = 0;
-    console.dir(selectedMods);
     selectedMods.forEach((mod) => {
       var spiceToAdd = Mods.find((m) => m.uid === mod).spice;
       spice += spiceToAdd;
@@ -39,12 +38,16 @@ const ModMenu = (props) => {
   Mods.forEach((mod) => {
     modList.push(
       <span className="modItem" key={mod.uid} title={mod.name}>
-        <input onChange={handleCheckboxChange} type="checkbox" name="mods" value={mod.uid} />{" "}
-        <label className="modLabel">{mod.name}</label>
+        <input onChange={handleCheckboxChange} type="checkbox" name="mods" value={mod.uid} /> <label className="modLabel">{mod.name}</label>
       </span>
     );
   });
-  const returnValue = <div id="mod-selector">{modList}<div className="spice-meter">{spiciness()}</div></div>;
+  const returnValue = (
+    <div id="mod-selector">
+      {modList}
+      <div className="spice-meter">{spiciness()}</div>
+    </div>
+  );
   return returnValue;
 };
 
