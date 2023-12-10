@@ -1,4 +1,4 @@
-import Chessboard from "chessboardjsx";
+import Chessboard from "./chessboard";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import React from "react";
@@ -33,17 +33,13 @@ const Game = (props) => {
     return null;
   }
 
-  function onDragStart(drag) {
+  function onDragStart(piece) {
     // do not pick up pieces if the game is over
     if (Chess().game_over()) return false;
     if (Chess().turn !== Chess().playerColor.charAt(0)) return false;
 
-    // only pick up pieces for White
-    if (Chess().playerColor === "white") {
-      if (drag.piece.search(/^b/) !== -1) return false;
-    } else {
-      if (drag.piece.search(/^w/) !== -1) return false;
-    }
+    // only pick up pieces for player color
+    if (piece.color !== Chess().playerColor) return false;
 
     return true;
   }
@@ -61,7 +57,16 @@ const Game = (props) => {
     updateUI();
   }
 
-  async function onDrop(drag) {
+  function indexToAlgebraic(index) {
+    return String.fromCharCode(index[1] + 97) + Math.abs(index[0] - 8);
+  }
+
+  async function onDrop(piece, target) {
+    //create drag object
+    var drag = {
+      sourceSquare: indexToAlgebraic(piece.getIndex(Chess().board)),
+      targetSquare: indexToAlgebraic([target.row, target.col]),
+    };
     // see if the move is legal
     var move = await Chess().move(drag);
 
@@ -72,7 +77,7 @@ const Game = (props) => {
       Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
     }
 
-    selectSquare(drag.targetSquare);
+    selectSquare(Chess().board[target.row][target.col]);
 
     // make random legal move for black
     if (!props.multiplayer && !Chess().game_over()) {
@@ -83,13 +88,14 @@ const Game = (props) => {
   }
 
   function selectSquare(square) {
-    const info = Chess().getPieceInfo(square);
+    if (!square) return;
+    const info = square.info(Chess());
 
     if (info) {
       setPieceInfo(info);
     }
 
-    greySquareMoves(square);
+    // greySquareMoves(square);
   }
 
   function onMouseoutSquare(square) {
@@ -166,16 +172,7 @@ const Game = (props) => {
     <div id="game-space" className="game">
       {props.multiplayer ? <ConnectionIndicator /> : ""}
       <div className="board">
-        <Chessboard
-          position={fen}
-          orientation={Chess().playerColor}
-          allowDrag={onDragStart}
-          onDrop={onDrop}
-          onMouseOverSquare={selectSquare}
-          onSquareClick={selectSquare}
-          squareStyles={{ ...fogHighlights, ...moveHighlights }}
-          width={window.innerWidth * 0.7 < window.innerHeight * 0.9 ? window.innerWidth * 0.7 : window.innerHeight * 0.9}
-        />
+        <Chessboard onMouseOverSquare={selectSquare} onDragStart={onDragStart} onMouseoutSquare={onMouseoutSquare} onDrop={onDrop} />
       </div>
       <div className="info-container">
         <div id="space-details" className="info-box">

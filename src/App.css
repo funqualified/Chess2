@@ -129,7 +129,7 @@ input[type="checkbox"] {
   align-content: center;
 }
 
-.spice-meter{
+.spice-meter {
   width: 2em;
   height: 2em;
   background-image: url("assets/UI/spice.png");
@@ -137,7 +137,7 @@ input[type="checkbox"] {
   background-size: contain;
 
   padding-top: 1.25em;
-  padding-left: .5em;
+  padding-left: 0.5em;
   padding-right: 1.5em;
   font-size: 2em;
 }
@@ -448,4 +448,28 @@ input[type="range"]#qt-slider::-ms-track {
 input:checked + .modLabel {
   transform: rotate(10deg) translate(0, 0.5em);
   transition: transform 0.2s;
+}
+
+/* Board */
+.row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.square {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.square.light {
+  background-color: #f0d9b5;
+}
+
+.square.dark {
+  background-color: #b58863;
 }
