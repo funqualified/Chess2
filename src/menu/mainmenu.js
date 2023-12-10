@@ -1,5 +1,5 @@
 import Title from "./title";
-import ModManager from "./modManager";
+import ModMenu from "./modMenu";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Chess from "../game/chess2";
@@ -114,9 +114,7 @@ const MainMenu = (props) => {
       {screen === "singleplayer" && (
         <div className="menu">
           <p>Select all mods you want to use.</p>
-          <div id="mod-selector">
-            <ModManager handleModsChanged={handleModsChanged} />
-          </div>
+            <ModMenu handleModsChanged={handleModsChanged} />
           <button className="button-53" onClick={beginSingleplayer}>
             Play
           </button>
@@ -133,9 +131,7 @@ const MainMenu = (props) => {
             <input onChange={handleIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
           </span>
           <p>Select all mods you want to use.</p>
-          <div id="mod-selector">
-            <ModManager handleModsChanged={handleModsChanged} />
-          </div>
+            <ModMenu handleModsChanged={handleModsChanged} />
           <button className="button-53" onClick={hostMultiplayer}>
             Host Game
           </button>
@@ -221,7 +217,7 @@ const MainMenu = (props) => {
       <br />
       <p>Select all mods you want to use.</p>
       <div id="mod-selector">
-        <ModManager handleModsChanged={handleModsChanged} />
+        <ModMenu handleModsChanged={handleModsChanged} />
       </div>
       <br />
     </div> */}

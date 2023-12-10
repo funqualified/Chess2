@@ -129,6 +129,19 @@ input[type="checkbox"] {
   align-content: center;
 }
 
+.spice-meter{
+  width: 2em;
+  height: 2em;
+  background-image: url("assets/UI/spice.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+
+  padding-top: 1.25em;
+  padding-left: .5em;
+  padding-right: 1.5em;
+  font-size: 2em;
+}
+
 @media screen and (max-aspect-ratio: 1/1) {
   #mod-selector {
     height: auto;

@@ -1,41 +1,25 @@
 import gameplayUIManager from "./gameplayUI";
+import { Mods } from "./mods";
 import getName from "../mods/PieceNames";
-
-const GameTags = {
-  FOG: "You can only see spaces your pieces can move to",
-  //STAMINA: "Each piece needs stamina to move",
-  VAMPIRE: "Pieces gain the powers of pieces they've captured",
-  SHIELDS: "Pieces can have a shield that prevents capture, consumed on use",
-  WRAP: "The left and right sides of the board wrap around",
-  LOYALTY: "Pieces may defect to the other side",
-  RANDOM_START: "Pieces will start using the Chess960 random alternate start rules",
-  ELIMINATION: "All enemy pieces must be eliminated to win, having no legal moves skips your turn",
-  //HIT_CHANCE: "Pieces may fail to capture",
-  //BOMBERS: "Pieces explode after X moves, capturing themselves and adjecent spaces",
-  QTE_PROMOTION: "Pawn promotion requires a quicktime minigame",
-  NO_EN_PASSANT: "Pawns may not make the En passant move",
-  NO_CASTLING: "Kings may not make the castling move",
-  NAMES: "Pieces have names",
-};
 
 function pieceFactory(fenId, index) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("pawn") : "Pawn", ["pawn"], true, true);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("pawn") : "Pawn", ["pawn"], true, true);
     case "b":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("bishop") : "Bishop", ["diagonal"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("bishop") : "Bishop", ["diagonal"]);
     case "n":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("knight") : "Knight", ["knight"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("knight") : "Knight", ["knight"]);
     case "r":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("rook") : "Rook", ["rook"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("rook") : "Rook", ["rook"]);
     case "q":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"]);
     case "k":
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName("king") : "King", ["king"], false, false, 100);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("king") : "King", ["king"], false, false, 100);
     default:
       console.log("Unrecognized piece");
-      return new Piece(color, fenId, index, instance.mods.includes(GameTags.NAMES) ? getName() : "");
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName() : "");
   }
 }
 
@@ -45,7 +29,7 @@ class Piece {
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
-    this.name = instance.mods.includes(GameTags.VAMPIRE) && instance.mods.includes(GameTags.NAMES) ? getName("vampire") : name;
+    this.name = instance.mods.includes("VAMPIRE") && instance.mods.includes("NAMES") ? getName("vampire") : name;
     this.loyalty = loyalty;
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
@@ -63,7 +47,7 @@ class Piece {
   }
 
   async endOfTurn(game, moves, defaultAction = false) {
-    if (game.mods.includes(GameTags.LOYALTY)) {
+    if (game.mods.includes("LOYALTY")) {
       if (this.fenId.toLowerCase() === "k") {
         this.loyalty = 100;
       } else {
@@ -86,7 +70,7 @@ class Piece {
 
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color === "white" && index[0] === 0) || (this.color === "black" && index[0] === 7))) {
-      if (game.mods.includes(GameTags.QTE_PROMOTION)) {
+      if (game.mods.includes("QTE_PROMOTION")) {
         if (this.color !== game.playerColor) {
           var value = Math.random() * 51;
         } else {
@@ -128,7 +112,7 @@ class Piece {
   move(game, move) {
     //can be en passant
     if (
-      !game.mods.includes(GameTags.NO_EN_PASSANT) &&
+      !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
       indexToAlgebraic(move.from) === indexToAlgebraic(this.startingIndex) &&
       Math.abs(move.to[0] - this.startingIndex[0]) === 2 &&
@@ -140,7 +124,7 @@ class Piece {
 
     //did an en passant
     if (
-      !game.mods.includes(GameTags.NO_EN_PASSANT) &&
+      !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
       indexToAlgebraic(move.to) === game.enPassant &&
       Math.abs(move.from[0] - move.to[0]) === 1 &&
@@ -202,15 +186,15 @@ class Piece {
 
   info(game) {
     let details = "";
-    details += game.mods.includes(GameTags.NAMES) ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
+    details += game.mods.includes("NAMES") ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
     details += "Abilities:\n";
-    if (game.mods.includes(GameTags.VAMPIRE)) {
+    if (game.mods.includes("VAMPIRE")) {
       details += "Move " + this.moveTypes + "\n";
     }
-    if (game.mods.includes(GameTags.SHIELDS) && this.hasShield) {
+    if (game.mods.includes("SHIELDS") && this.hasShield) {
       details += "Shielded\n";
     }
-    if (game.mods.includes(GameTags.LOYALTY)) {
+    if (game.mods.includes("LOYALTY")) {
       details += `Loyalty:${this.loyalty}\n`;
     }
     return details;
@@ -283,7 +267,7 @@ class Piece {
         // Pawn captures diagonally
         return true;
       } else if (
-        game.mods.includes(GameTags.WRAP) &&
+        game.mods.includes("WRAP") &&
         source[0] - target[0] === 1 &&
         (!!targetPiece || game.enPassant === indexToAlgebraic(target)) &&
         ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
@@ -304,7 +288,7 @@ class Piece {
         // Pawn captures diagonally
         return true;
       } else if (
-        game.mods.includes(GameTags.WRAP) &&
+        game.mods.includes("WRAP") &&
         source[0] - target[0] === -1 &&
         (!!targetPiece || game.enPassant === indexToAlgebraic(target)) &&
         ((source[1] === 0 && target[1] === game.board[source[0]].length - 1) || (source[1] === game.board[source[0]].length - 1 && target[1] === 0))
@@ -329,8 +313,8 @@ class Piece {
       return true;
     }
     if (
-      (game.mods.includes(GameTags.WRAP) && Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
-      (game.mods.includes(GameTags.WRAP) && Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
+      (game.mods.includes("WRAP") && Math.abs(source[0] - target[0]) === 2 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 1) ||
+      (game.mods.includes("WRAP") && Math.abs(source[0] - target[0]) === 1 && Math.abs(source[1] - target[1]) === game.board[source[0]].length - 2)
     ) {
       return true;
     }
@@ -347,7 +331,7 @@ class Piece {
       const maxRow = Math.max(source[1], target[1]);
       for (let i = minRow + 1; i < maxRow; i++) {
         if (game.board[source[0]][i]) {
-          if (game.mods.includes(GameTags.WRAP)) {
+          if (game.mods.includes("WRAP")) {
             for (let o = maxRow + 1; o !== minRow; o++) {
               if (o >= game.board[source[0]].length) {
                 o = 0;
@@ -422,7 +406,7 @@ class Piece {
       }
     }
     if (
-      game.mods.includes(GameTags.WRAP) &&
+      game.mods.includes("WRAP") &&
       (Math.abs(source[0] - target[0] + 8) === Math.abs(source[1] - target[1]) ||
         Math.abs(source[0] - target[0]) === Math.abs(source[1] - target[1] + 8) ||
         Math.abs(source[0] - target[0] - 8) === Math.abs(source[1] - target[1]) ||
@@ -510,7 +494,7 @@ class Piece {
       // King moves 1 space in any direction
       return true;
     } else if (
-      !game.mods.includes(GameTags.NO_CASTLING) &&
+      !game.mods.includes("NO_CASTLING") &&
       targetPiece &&
       targetPiece.fenId &&
       targetPiece.fenId.toUpperCase() === "R" &&
@@ -538,7 +522,7 @@ class Piece {
 
       // King castles
       return true;
-    } else if (game.mods.includes(GameTags.WRAP)) {
+    } else if (game.mods.includes("WRAP")) {
       if (!!targetPiece && this.color === targetPiece.color) {
         return false;
       }
@@ -648,7 +632,7 @@ class Chess {
   }
 
   getInitialFen() {
-    if (this.mods.includes(GameTags.RANDOM_START)) {
+    if (this.mods.includes("RANDOM_START")) {
       var possitionsArr = [null, null, null, null, null, null, null, null];
       possitionsArr[Math.floor(Math.random() * 4) * 2] = "b";
       possitionsArr[Math.floor(Math.random() * 4) * 2 + 1] = "b";
@@ -707,7 +691,7 @@ class Chess {
     const index = algebraicToIndex(square);
     const piece = this.board[index[0]][index[1]];
     if (piece) {
-      if (this.mods.includes(GameTags.FOG)) {
+      if (this.mods.includes("FOG")) {
         let sight = this.moves(this.playerColor).map((move) => {
           return algebraicToIndex(move.to).toString();
         });
@@ -730,7 +714,7 @@ class Chess {
   }
 
   getGameWinner() {
-    if (this.mods.includes(GameTags.ELIMINATION)) {
+    if (this.mods.includes("ELIMINATION")) {
       var hasValidMove = false;
       var whiteHasPieces = false;
       var blackHasPieces = false;
@@ -797,7 +781,7 @@ class Chess {
       });
       const index = algebraicToIndex(from);
       const piece = this.board[index[0]][index[1]];
-      if (!playerVisable || !this.mods.includes(GameTags.FOG) || sight.includes(index?.toString()) || piece?.color === this.playerColor) {
+      if (!playerVisable || !this.mods.includes("FOG") || sight.includes(index?.toString()) || piece?.color === this.playerColor) {
         for (let x = 0; x < this.board.length; x++) {
           for (let y = 0; y < this.board[x].length; y++) {
             if (this.isLegalMove(from, indexToAlgebraic([x, y]))) {
@@ -901,13 +885,13 @@ class Chess {
 
     piece.move(copy, { from: source, to: target });
 
-    if (copy.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
+    if (copy.mods.includes("SHIELDS") && targetPiece?.hasShield) {
       targetPiece.hasShield = false;
       copy.endTurn(true);
       return copy;
     }
 
-    if (copy.mods.includes(GameTags.VAMPIRE) && targetPiece) {
+    if (copy.mods.includes("VAMPIRE") && targetPiece) {
       targetPiece.moveTypes.forEach((value) => {
         if (!piece.moveTypes.includes(value)) {
           piece.moveTypes.push(value);
@@ -937,7 +921,7 @@ class Chess {
     }
 
     //Ensure move doesn't put or keep the player in check
-    if (!this.isCopy && !this.mods.includes(GameTags.ELIMINATION)) {
+    if (!this.isCopy && !this.mods.includes("ELIMINATION")) {
       const simulatedGame = this.simulateMove(from, to);
       if (simulatedGame.isInCheck(piece.color)) {
         return false;
@@ -966,7 +950,7 @@ class Chess {
       }
     }
 
-    if (this.mods.includes(GameTags.ELIMINATION)) {
+    if (this.mods.includes("ELIMINATION")) {
       var hasValidMove = false;
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[i].length; j++) {
@@ -990,7 +974,7 @@ class Chess {
   }
 
   fog() {
-    if (this.mods.includes(GameTags.FOG)) {
+    if (this.mods.includes("FOG")) {
       let sight = this.moves(this.playerColor).map((move) => {
         return algebraicToIndex(move.to).toString();
       });
@@ -1049,7 +1033,7 @@ class Chess {
   }
 
   fen() {
-    if (this.mods.includes(GameTags.FOG) && !this.game_over()) {
+    if (this.mods.includes("FOG") && !this.game_over()) {
       return this.fenFow();
     }
     let fen = "";
@@ -1101,13 +1085,13 @@ class Chess {
 
       const moveHandled = piece.move(this, { from: source, to: target });
 
-      if (this.mods.includes(GameTags.SHIELDS) && targetPiece?.hasShield) {
+      if (this.mods.includes("SHIELDS") && targetPiece?.hasShield) {
         targetPiece.hasShield = false;
         await this.endTurn();
         return true;
       }
 
-      if (this.mods.includes(GameTags.VAMPIRE) && targetPiece) {
+      if (this.mods.includes("VAMPIRE") && targetPiece) {
         targetPiece.moveTypes.forEach((value) => {
           if (!piece.moveTypes.includes(value)) {
             piece.moveTypes.push(value);
@@ -1135,4 +1119,4 @@ function getChess() {
 }
 
 export default getChess;
-export { GameTags, Piece };
+export { Piece };
