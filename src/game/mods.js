@@ -1,6 +1,4 @@
-class ModManager{
-
-}
+class ModManager {}
 
 const Mods = [
   {
@@ -10,13 +8,13 @@ const Mods = [
     spice: 4,
     uid: "FOG",
   },
-  {
-    name: "Stamina",
-    description: "Each piece needs stamina to move",
-    tags: ["Movement", "Rule Addition"],
-    spice: 2,
-    uid: "STAMINA",
-  },
+  // {
+  //   name: "Stamina",
+  //   description: "Each piece needs stamina to move",
+  //   tags: ["Movement", "Rule Addition"],
+  //   spice: 2,
+  //   uid: "STAMINA",
+  // },
   {
     name: "Vampire",
     description: "Pieces gain the powers of pieces they've captured",
@@ -59,20 +57,20 @@ const Mods = [
     spice: 2,
     uid: "ELIMINATION",
   },
-  {
-    name: "Hit Chance",
-    description: "Pieces may fail to capture",
-    tags: ["Capture", "Rule Change"],
-    spice: 3,
-    uid: "HIT_CHANCE",
-  },
-  {
-    name: "Bombers",
-    description: "Pieces explode after X moves, capturing themselves and adjecent spaces",
-    tags: ["Capture", "Rule Addition"],
-    spice: 3,
-    uid: "BOMBERS",
-  },
+  // {
+  //   name: "Hit Chance",
+  //   description: "Pieces may fail to capture",
+  //   tags: ["Capture", "Rule Change"],
+  //   spice: 3,
+  //   uid: "HIT_CHANCE",
+  // },
+  // {
+  //   name: "Bombers",
+  //   description: "Pieces explode after X moves, capturing themselves and adjecent spaces",
+  //   tags: ["Capture", "Rule Addition"],
+  //   spice: 3,
+  //   uid: "BOMBERS",
+  // },
   {
     name: "Quicktime Promotion",
     description: "Pawn promotion requires a quicktime minigame",
@@ -106,11 +104,11 @@ const Mods = [
 let instance = null;
 
 function getModManager() {
-    if (!instance) {
-      instance = new ModManager();
-    }
-    return instance;
+  if (!instance) {
+    instance = new ModManager();
   }
-  
-  export default getModManager;
-  export {Mods};
+  return instance;
+}
+
+export default getModManager;
+export { Mods };
