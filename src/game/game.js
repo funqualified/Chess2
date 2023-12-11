@@ -26,7 +26,7 @@ const Game = (props) => {
   const [pieceInfo, setPieceInfo] = useState("");
   const [selectedSquare, setSelectedSquare] = useState("");
   const [moveHighlights, setMoveHighlights] = useState([]);
-  const [fogHighlights, setFogHighlights] = useState({});
+  const [fogHighlights, setFogHighlights] = useState([]);
 
   if (!Chess().initialized) {
     return null;
@@ -60,7 +60,7 @@ const Game = (props) => {
     //create drag object
     var drag = {
       sourceSquare: piece.getIndex(Chess().board),
-      targetSquare: { row: target.row, col: target.col },
+      targetSquare: target,
     };
     // see if the move is legal
     var move = await Chess().move(drag);
@@ -72,7 +72,7 @@ const Game = (props) => {
       Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
     }
 
-    selectSquare(Chess().board[target.row][target.col]);
+    selectSquare(target);
 
     // make random legal move for black
     if (!props.multiplayer && !Chess().game_over()) {
@@ -84,7 +84,7 @@ const Game = (props) => {
 
   function selectSquare(square) {
     if (!square) return;
-    const info = square.info(Chess());
+    const info = Chess().getPieceInfo(square);
 
     if (info) {
       setPieceInfo(info);
@@ -98,7 +98,9 @@ const Game = (props) => {
     setPieceInfo("");
   }
 
-  function greySquareMoves(piece) {
+  function greySquareMoves(sqaure) {
+    var piece = Chess().board[sqaure.row][sqaure.col];
+    if (!piece) return;
     var index = piece.getIndex(Chess().board);
     // get list of possible moves for this square
     var moves = Chess().moves(index, true);
@@ -119,21 +121,8 @@ const Game = (props) => {
     setMoveHighlights([]);
   }
 
-  function fogSquares(squares) {
-    const newHighlights = squares.reduce((a, c) => {
-      return {
-        ...a,
-        [c]: {
-          background: "#000000aa",
-        },
-      };
-    }, {});
-
-    setFogHighlights({ ...newHighlights });
-  }
-
   function updateUI() {
-    fogSquares(Chess().fog());
+    setFogHighlights(Chess().fog());
     setGameInfo(Chess().getGameInfo());
   }
 
@@ -159,6 +148,7 @@ const Game = (props) => {
           onMouseoutSquare={onMouseoutSquare}
           onDragStart={onDragStart}
           onDrop={onDrop}
+          fog={fogHighlights}
           highlightedSquares={moveHighlights}
         />
       </div>

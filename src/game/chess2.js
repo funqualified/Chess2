@@ -1,4 +1,5 @@
 import gameplayUIManager from "./gameplayUI";
+import GridPosition from "../models/gridPosition";
 import { Mods } from "./mods";
 import getName from "../mods/PieceNames";
 
@@ -39,7 +40,7 @@ class Piece {
     for (let i = 0; i < board.length; i++) {
       for (let j = 0; j < board[i].length; j++) {
         if (board[i][j] === this) {
-          return { row: i, col: j };
+          return new GridPosition(i, j);
         }
       }
     }
@@ -113,11 +114,11 @@ class Piece {
     if (
       !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
-      JSON.stringify(move.from) === JSON.stringify(this.startingIndex) &&
+      move.from.equals(this.startingIndex) &&
       Math.abs(move.to.row - this.startingIndex.row) === 2 &&
       move.from.col == move.to.col
     ) {
-      game.enPassant = { row: Math.min(move.from.row, move.to.row) + 1, col: move.from.col };
+      game.enPassant = new GridPosition(Math.min(move.from.row, move.to.row) + 1, move.from.col);
       game.justDoubleMovedPawn = true;
     }
 
@@ -125,7 +126,7 @@ class Piece {
     if (
       !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
-      JSON.stringify(move.to) === JSON.stringify(game.enPassant) &&
+      move.to.equals(game.enPassant) &&
       Math.abs(move.from.row - move.to.row) === 1 &&
       Math.abs(move.from.col - move.to.col) === 1
     ) {
@@ -168,7 +169,7 @@ class Piece {
       for (let i = 0; i < game.board.length; i++) {
         for (let j = 0; j < game.board[i].length; j++) {
           if (game.board[i][j] && game.board[i][j].fenId.toUpperCase() === "K" && game.board[i][j].color === this.color) {
-            kingIndex = { row: i, col: j };
+            kingIndex = new GridPosition(i, j);
           }
         }
       }
@@ -262,17 +263,13 @@ class Piece {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (
-        Math.abs(source.col - target.col) === 1 &&
-        source.row - target.row === 1 &&
-        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target))
-      ) {
+      } else if (Math.abs(source.col - target.col) === 1 && source.row - target.row === 1 && (!!targetPiece || game.enPassant.equals(target))) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes("WRAP") &&
         source.row - target.row === 1 &&
-        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target)) &&
+        (!!targetPiece || game.enPassant.equals(target)) &&
         ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
       ) {
         //Pawn captures diagonally over wrap
@@ -287,17 +284,13 @@ class Piece {
           // Pawn moves forward 1 space
           return true;
         }
-      } else if (
-        Math.abs(source.col - target.col) === 1 &&
-        source.row - target.row === -1 &&
-        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target))
-      ) {
+      } else if (Math.abs(source.col - target.col) === 1 && source.row - target.row === -1 && (!!targetPiece || game.enPassant.equals(target))) {
         // Pawn captures diagonally
         return true;
       } else if (
         game.mods.includes("WRAP") &&
         source.row - target.row === -1 &&
-        (!!targetPiece || JSON.stringify(game.enPassant) === JSON.stringify(target)) &&
+        (!!targetPiece || game.enPassant.equals(target)) &&
         ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
       ) {
         //Pawn captures diagonally over wrap
@@ -600,7 +593,7 @@ class Chess {
     const rows = fen.split(" ")[0].split("/");
     this.turn = fen.split(" ")[1];
     this.castling = fen.split(" ")[2];
-    this.enPassant = fen.split(" ")[3];
+    this.enPassant = new GridPosition(-1, -1);
     this.playerColor = color;
     this.winner = null;
     this.initialized = true;
@@ -614,7 +607,7 @@ class Chess {
         const char = rows[i][j];
 
         if (isNaN(char)) {
-          row.push(pieceFactory(char, { row: i, col: j }));
+          row.push(pieceFactory(char, new GridPosition(i, j)));
         } else {
           for (let o = 0; o < parseInt(char); o++) {
             row.push(null);
@@ -622,9 +615,9 @@ class Chess {
         }
       }
 
-      while (row.length < 8) {
-        row.push(null);
-      }
+      // while (row.length < 8) {
+      //   row.push(null);
+      // }
 
       this.board.push(row);
     }
@@ -691,9 +684,9 @@ class Chess {
     if (piece) {
       if (this.mods.includes("FOG")) {
         let sight = this.playerMoves(this.playerColor).map((move) => {
-          return JSON.stringify(move.to);
+          return move.to;
         });
-        if (sight.includes(JSON.stringify(square)) || piece.color === this.playerColor) {
+        if (square.isIn(sight) || piece.color === this.playerColor) {
           return piece.info(this);
         }
         return null;
@@ -720,7 +713,7 @@ class Chess {
         for (let j = 0; j < this.board[i].length; j++) {
           const piece = this.board[i][j];
           if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves({ row: i, col: j }).length > 0) {
+            if (piece.color.charAt(0) === this.turn && this.moves(new GridPosition(i, j)).length > 0) {
               hasValidMove = true;
             }
             if (piece.color.charAt(0) === "w") {
@@ -751,7 +744,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color.charAt(0) === this.turn) {
-          this.moves({ row: i, col: j }).forEach((move) => {
+          this.moves(new GridPosition(i, j)).forEach((move) => {
             var target = this.board[move.to.row][move.to.col];
             hasValidMove = true;
             if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
@@ -778,10 +771,10 @@ class Chess {
         if (!!piece && (color === "" || !color || color === piece.color)) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
-              if (this.isLegalMove({ row: i, col: j }, { row: x, col: y })) {
+              if (this.isLegalMove(new GridPosition(i, j), new GridPosition(x, y))) {
                 moves.push({
-                  from: { row: i, col: j },
-                  to: { row: x, col: y },
+                  from: new GridPosition(i, j),
+                  to: new GridPosition(x, y),
                 });
               }
             }
@@ -796,16 +789,16 @@ class Chess {
     let moves = [];
 
     let sight = this.playerMoves(this.playerColor).map((move) => {
-      return JSON.stringify(move.to);
+      return move.to;
     });
     const piece = this.board[from.row][from.col];
-    if (!playerVisable || !this.mods.includes("FOG") || sight.includes(JSON.stringify(from)) || piece?.color === this.playerColor) {
+    if (!playerVisable || !this.mods.includes("FOG") || from.isIn(sight) || piece?.color === this.playerColor) {
       for (let x = 0; x < this.board.length; x++) {
         for (let y = 0; y < this.board[x].length; y++) {
-          if (this.isLegalMove(from, { row: x, col: y })) {
+          if (this.isLegalMove(from, new GridPosition(x, y))) {
             moves.push({
               from: from,
-              to: { row: x, col: y },
+              to: new GridPosition(x, y),
             });
           }
         }
@@ -824,7 +817,7 @@ class Chess {
       for (let j = 0; j < board[i].length; j++) {
         const piece = board[i][j];
         if (piece !== null && piece.color === enemyColor) {
-          if (piece.isLegalMove({ row: i, col: j }, kingIndex, board, this)) {
+          if (piece.isLegalMove(new GridPosition(i, j), kingIndex, board, this)) {
             return true;
           }
         }
@@ -845,7 +838,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         if (this.board[i][j] !== null && this.board[i][j].color === color && this.board[i][j].fenId.toLowerCase() === "k") {
           king = this.board[i][j];
-          kingIndex = { row: i, col: j };
+          kingIndex = new GridPosition(i, j);
           break;
         }
       }
@@ -865,7 +858,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color === enemyColor) {
-          if (piece.isLegalMove({ row: i, col: j }, kingIndex, this.board, this)) {
+          if (piece.isLegalMove(new GridPosition(i, j), kingIndex, this.board, this)) {
             return true;
           }
         }
@@ -956,7 +949,7 @@ class Chess {
         for (let j = 0; j < this.board[i].length; j++) {
           const piece = this.board[i][j];
           if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves({ row: i, col: j }).length > 0) {
+            if (piece.color.charAt(0) === this.turn && this.moves(new GridPosition(i, j)).length > 0) {
               hasValidMove = true;
             }
           }
@@ -967,8 +960,8 @@ class Chess {
       }
     }
 
-    if (this.enPassant !== "-" && !this.justDoubleMovedPawn) {
-      this.enPassant = "-";
+    if (!this.enPassant.equals(new GridPosition(-1, -1)) && !this.justDoubleMovedPawn) {
+      this.enPassant = new GridPosition(-1, -1);
     }
     this.justDoubleMovedPawn = false;
   }
@@ -976,15 +969,15 @@ class Chess {
   fog() {
     if (this.mods.includes("FOG")) {
       let sight = this.playerMoves(this.playerColor).map((move) => {
-        return JSON.stringify(move.to);
+        return move.to;
       });
 
       let fogArr = [];
 
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[i].length; j++) {
-          if (!sight.includes(`${i},${j}`) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
-            fogArr.push({ row: i, col: j });
+          if (!new GridPosition(i, j).isIn(sight) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
+            fogArr.push(new GridPosition(i, j));
           }
         }
       }

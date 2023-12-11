@@ -488,3 +488,11 @@ input:checked + .modLabel {
 .square.dark.highlight {
   background-color: #533a25;
 }
+
+.square.light.fog {
+  background-color: #e9e3d9;
+}
+
+.square.dark.fog {
+  background-color: #a69e93;
+}
