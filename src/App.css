@@ -51,6 +51,75 @@
   height: 1.5em;
 }
 
+/* menu-info-toggle should always display in the top left corner with a circle surrounding the text */
+#menu-info-toggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background-color: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: #000000 solid 2px;
+}
+
+#menu-info-toggle:hover {
+  background-color: #ddd;
+}
+
+#menu-info-toggle > p {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+#menu-info-toggle > p:hover {
+  color: #ddd;
+}
+
+#menu-info-box {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  border-radius: 20px;
+  padding: 10px;
+  background-color: #eee;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  border: #000000 solid 2px;
+  z-index: 1;
+}
+
+#menu-info-box > p {
+  margin-left: 10%;
+  margin-right: 10%;
+  font-size: 1.5em;
+  color: black;
+}
+
+#menu-info-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  background-color: #eee;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: #bd0202 solid 5px;
+  color: #bd0202;
+}
+
 .menu {
   height: 55vh;
   padding-top: 20vh;

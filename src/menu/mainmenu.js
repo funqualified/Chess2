@@ -11,6 +11,7 @@ const MainMenu = (props) => {
   const [username, setUsername] = useState("");
   const [peerId, setPeerId] = useState("");
   const [gameId, setgameId] = useState("");
+  const [gameInfo, setGameInfo] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [screen, setScreen] = useState("mainmenu"); // ["mainmenu", "multiplayer", "singleplayer", "createGame", "joinGame"]
   const navigate = useNavigate();
@@ -88,6 +89,47 @@ const MainMenu = (props) => {
 
   return (
     <div id="menu-space" className="menu">
+      <div id="menu-info-toggle" onClick={() => setGameInfo(!gameInfo)}>
+        i
+      </div>
+      {gameInfo && (
+        <div id="menu-info-box">
+          <div id="menu-info-close" onClick={() => setGameInfo(false)}>
+            X
+          </div>
+          <p> Chess 2 - Game of the Year Edition</p>
+          <p>
+            {" "}
+            What is it?
+            <br /> Chess, but better. Inpired by a number of things, ultimately Chess 2 is an attempt to add robust mod support to the centuries old game of
+            Chess.
+          </p>
+          <p>
+            {" "}
+            Did you say mods?
+            <br /> I sure did. For now, you can play with a number of built in modification to the base rules of Chess. But as we approach a full release, the
+            game will open up to community mod support. I hope for Chess 2 to be the top way to play established chess variant, new rules additions, and wacky
+            absurdity.
+          </p>
+          <p>
+            {" "}
+            How do I play?
+            <br /> Pick singleplayer or multiplayer, add some mods, and start playing. Unless a mod changes something, all the standard rules of chess are in
+            play. In multiplayer you can create private matches and send the session code to a friend. You can also start or join a public game to play with a
+            stranger.
+          </p>
+          <p>
+            {" "}
+            When will the full game be ready?
+            <br /> Probably late 2024.
+          </p>
+          <p>
+            {" "}
+            Who is making this?
+            <br /> Me. Ryan Lindemuder. Just a cool guy making games.{" "}
+          </p>
+        </div>
+      )}
       <Title />
       {screen === "mainmenu" && (
         <div className="menu">
