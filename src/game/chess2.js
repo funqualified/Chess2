@@ -683,9 +683,7 @@ class Chess {
     const piece = this.board[square.row][square.col];
     if (piece) {
       if (this.mods.includes("FOG")) {
-        let sight = this.playerMoves(this.playerColor).map((move) => {
-          return move.to;
-        });
+        let sight = this.getPlayerSight(this.playerColor);
         if (square.isIn(sight) || piece.color === this.playerColor) {
           return piece.info(this);
         }
@@ -785,12 +783,42 @@ class Chess {
     return moves;
   }
 
+  getPlayerSight(color) {
+    let sight = [];
+    this.playerMoves(color).forEach((move) => {
+      sight.push(move.to);
+    });
+    //Add all pawn forward diagonals to sight
+    for (let i = 0; i < this.board.length; i++) {
+      for (let j = 0; j < this.board[i].length; j++) {
+        const piece = this.board[i][j];
+        if (!!piece && piece.moveTypes.includes("pawn") && piece.color === this.playerColor) {
+          if (piece.color === "white") {
+            if (j > 0) {
+              sight.push(new GridPosition(i - 1, j - 1));
+            }
+            if (j < this.board[i].length - 1) {
+              sight.push(new GridPosition(i - 1, j + 1));
+            }
+          } else {
+            if (j > 0) {
+              sight.push(new GridPosition(i + 1, j - 1));
+            }
+            if (j < this.board[i].length - 1) {
+              sight.push(new GridPosition(i + 1, j + 1));
+            }
+          }
+        }
+      }
+    }
+    return sight;
+  }
+
   moves(from, playerVisable = false) {
     let moves = [];
 
-    let sight = this.playerMoves(this.playerColor).map((move) => {
-      return move.to;
-    });
+    let sight = this.getPlayerSight(this.playerColor);
+
     const piece = this.board[from.row][from.col];
     if (!playerVisable || !this.mods.includes("FOG") || from.isIn(sight) || piece?.color === this.playerColor) {
       for (let x = 0; x < this.board.length; x++) {
@@ -968,9 +996,7 @@ class Chess {
 
   fog() {
     if (this.mods.includes("FOG")) {
-      let sight = this.playerMoves(this.playerColor).map((move) => {
-        return move.to;
-      });
+      let sight = this.getPlayerSight(this.playerColor);
 
       let fogArr = [];
 
