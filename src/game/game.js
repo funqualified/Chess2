@@ -150,6 +150,7 @@ const Game = (props) => {
           onDrop={onDrop}
           fog={fogHighlights}
           highlightedSquares={moveHighlights}
+          orientation={Chess().playerColor}
         />
       </div>
       <div className="info-container">
@@ -160,7 +161,7 @@ const Game = (props) => {
           <p>{gameInfo}</p>
         </div>
         <button onClick={quit}>Quit Game</button>
-        <button onClick={undo}>Undo</button>
+        {props.multiplayer ? "" : <button onClick={undo}>Undo</button>}
       </div>
     </div>
   );

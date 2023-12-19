@@ -61,12 +61,27 @@ const Chessboard = (props) => {
     props.onMouseOverSquare(square);
   }
 
+  let board = Chess().board;
+  let colOffset = 0;
+  let rowOffset = 0;
+
+  if (props.orientation === "black") {
+    colOffset = board.length - 1;
+    rowOffset = board[0].length - 1; //TODO: support boards with uneven rows
+    board = board.reverse();
+    board.forEach((row) => {
+      row.reverse();
+    });
+  }
+
   return (
     <div id="board">
-      {Chess().board.map((row, rowIndex) => {
+      {board.map((row, rowIndex) => {
+        rowIndex = Math.abs(rowOffset - rowIndex);
         return (
           <div className="row" key={rowIndex}>
             {row.map((square, squareIndex) => {
+              squareIndex = Math.abs(colOffset - squareIndex);
               return (
                 <div
                   className={squareClasses(rowIndex, squareIndex)}

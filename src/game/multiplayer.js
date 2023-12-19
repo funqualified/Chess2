@@ -1,4 +1,5 @@
 import Peer from "peerjs";
+import GridPosition from "../models/gridPosition";
 import Chess, { Piece } from "./chess2";
 
 class Multiplayer {
@@ -123,7 +124,7 @@ class Multiplayer {
     }
 
     if (data.hasOwnProperty("enPassant")) {
-      Chess().enPassant = data.enPassant;
+      Chess().enPassant = new GridPosition(data.enPassant.row, data.enPassant.col);
     }
 
     if (data.hasOwnProperty("board")) {

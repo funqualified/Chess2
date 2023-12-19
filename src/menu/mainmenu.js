@@ -20,6 +20,7 @@ const MainMenu = (props) => {
   }, []);
 
   function beginSingleplayer() {
+    props.setMultiplayer(false);
     Chess().init(activeMods, "white");
     navigate("/match");
   }
@@ -114,7 +115,7 @@ const MainMenu = (props) => {
       {screen === "singleplayer" && (
         <div className="menu">
           <p>Select all mods you want to use.</p>
-            <ModMenu handleModsChanged={handleModsChanged} />
+          <ModMenu handleModsChanged={handleModsChanged} />
           <button className="button-53" onClick={beginSingleplayer}>
             Play
           </button>
@@ -131,7 +132,7 @@ const MainMenu = (props) => {
             <input onChange={handleIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
           </span>
           <p>Select all mods you want to use.</p>
-            <ModMenu handleModsChanged={handleModsChanged} />
+          <ModMenu handleModsChanged={handleModsChanged} />
           <button className="button-53" onClick={hostMultiplayer}>
             Host Game
           </button>
