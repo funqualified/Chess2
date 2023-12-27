@@ -92,13 +92,15 @@ const Chessboard = (props) => {
                   onDragOver={(e) => e.preventDefault()}>
                   {square && !isFog(rowIndex, squareIndex) ? (
                     <img
-                      src={imageMap[`${square.color[0]}${square.fenId.toUpperCase()}`]}
-                      alt={`${square.color[0]}${square.fenId.toUpperCase()}.svg`}
-                      onDragStart={(e) => onDragStart(e, square)}
+                    className="piece"
+                    src={imageMap[`${square.color[0]}${square.fenId.toUpperCase()}`]}
+                    alt={`${square.color[0]}${square.fenId.toUpperCase()}.svg`}
+                    onDragStart={(e) => onDragStart(e, square)}
                     />
-                  ) : (
-                    ""
-                  )}
+                    ) : (
+                      ""
+                      )}
+                      {square && !isFog(rowIndex, squareIndex) ? <PieceStateIndicator piece={square} /> : ""}
                 </div>
               );
             })}
@@ -107,6 +109,16 @@ const Chessboard = (props) => {
       })}
     </div>
   );
+};
+
+const PieceStateIndicator = (props) => {
+
+
+  return <div class="piece-state-indicator">
+    {props.piece.hasShield && <div class="state-icon">S</div>}
+    {props.piece.isVampire && <div class="state-icon">V</div>}
+    {Chess().mods.includes("LOYALTY") && <div class="state-icon">{props.piece.loyalty}</div>}
+  </div>;
 };
 
 export default Chessboard;

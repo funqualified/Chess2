@@ -540,6 +540,8 @@ input:checked + .modLabel {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+
+  position: relative;
 }
 
 .square.light {
@@ -564,4 +566,29 @@ input:checked + .modLabel {
 
 .square.dark.fog {
   background-color: #a69e93;
+}
+
+/* Piece State Indicator */
+.piece-state-indicator {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  pointer-events: none;
+}
+
+.state-icon {
+  align-self: flex-start;
+  justify-self: flex-start;
+  width: 18%;
+  height: 18%;
+  background-color: #007cf8;
+  border-radius: 50%;
+}
+
+.piece {
+  position: absolute;
+  width: 80%;
 }

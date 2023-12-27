@@ -7,17 +7,17 @@ function pieceFactory(fenId, index) {
   const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
   switch (fenId.toLowerCase()) {
     case "p":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("pawn") : "Pawn", ["pawn"], true, true);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("pawn") : "Pawn", ["pawn"], true, false, true);
     case "b":
       return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("bishop") : "Bishop", ["diagonal"]);
     case "n":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("knight") : "Knight", ["knight"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("knight") : "Knight", ["knight"], false, true);
     case "r":
       return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("rook") : "Rook", ["rook"]);
     case "q":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"]);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"], false, true);
     case "k":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("king") : "King", ["king"], false, false, 100);
+      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("king") : "King", ["king"], false, true, false, 100);
     default:
       console.log("Unrecognized piece");
       return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName() : "");
@@ -25,12 +25,13 @@ function pieceFactory(fenId, index) {
 }
 
 class Piece {
-  constructor(color, fenId, startingIndex, name = fenId, moveTypes = [], hasShield = false, canPromote = false, loyalty = 10) {
+  constructor(color, fenId, startingIndex, name = fenId, moveTypes = [], hasShield = false, isVampire = false, canPromote = false, loyalty = 10) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
-    this.name = instance.mods.includes("VAMPIRE") && instance.mods.includes("NAMES") ? getName("vampire") : name;
+    this.isVampire = isVampire
+    this.name = isVampire && instance.mods.includes("NAMES") ? getName("vampire") : name;
     this.loyalty = loyalty;
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
@@ -188,7 +189,7 @@ class Piece {
     let details = "";
     details += game.mods.includes("NAMES") ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
     details += "Abilities:\n";
-    if (game.mods.includes("VAMPIRE")) {
+    if (this.isVampire) {
       details += "Move " + this.moveTypes + "\n";
     }
     if (game.mods.includes("SHIELDS") && this.hasShield) {
@@ -1034,7 +1035,7 @@ class Chess {
         return true;
       }
 
-      if (this.mods.includes("VAMPIRE") && targetPiece) {
+      if (this.mods.includes("VAMPIRE") && piece.isVampire && targetPiece) {
         targetPiece.moveTypes.forEach((value) => {
           if (!piece.moveTypes.includes(value)) {
             piece.moveTypes.push(value);

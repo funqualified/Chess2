@@ -134,7 +134,7 @@ class Multiplayer {
           if (!p) {
             return null;
           }
-          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.isVampire, p.canPromote, p.loyalty);
         });
       });
     }
