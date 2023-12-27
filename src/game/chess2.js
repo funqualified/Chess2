@@ -552,12 +552,12 @@ class Chess {
           if (!p) {
             return null;
           }
-          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.isVampire, p.canPromote, p.loyalty);
         });
       });
       this.turn = move.turn;
       this.castling = move.castling;
-      this.enPassant = move.enPassant;
+      this.enPassant = new GridPosition(move.enPassant.row, move.enPassant.col);
       this.winner = null;
       return true;
     }

@@ -115,8 +115,8 @@ const PieceStateIndicator = (props) => {
 
 
   return <div class="piece-state-indicator">
-    {props.piece.hasShield && <div class="state-icon">S</div>}
-    {props.piece.isVampire && <div class="state-icon">V</div>}
+    {Chess().mods.includes("SHIELDS") && props.piece.hasShield && <div class="state-icon">S</div>}
+    {Chess().mods.includes("VAMPIRE") && props.piece.isVampire && <div class="state-icon">V</div>}
     {Chess().mods.includes("LOYALTY") && <div class="state-icon">{props.piece.loyalty}</div>}
   </div>;
 };
