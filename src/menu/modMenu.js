@@ -1,4 +1,4 @@
-import { Mods } from "../game/mods.js";
+import { Mods } from "../managers/mods.js";
 import { useState } from "react";
 
 const ModMenu = (props) => {

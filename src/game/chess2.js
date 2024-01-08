@@ -1,6 +1,6 @@
 import gameplayUIManager from "./gameplayUI";
 import GridPosition from "../models/gridPosition";
-import { Mods } from "./mods";
+import { Mods } from "../managers/mods";
 import getName from "../mods/PieceNames";
 
 function pieceFactory(fenId, index) {
@@ -30,7 +30,7 @@ class Piece {
     this.fenId = fenId;
     this.moveTypes = moveTypes;
     this.hasShield = hasShield;
-    this.isVampire = isVampire
+    this.isVampire = isVampire;
     this.name = isVampire && instance.mods.includes("NAMES") ? getName("vampire") : name;
     this.loyalty = loyalty;
     this.canPromote = canPromote;

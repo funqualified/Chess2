@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Chess from "../game/chess2";
 import Multiplayer from "../game/multiplayer";
+import useSound from "use-sound";
+
+import clickSfx from "../assets/Audio/blipSelect.wav";
 
 const MainMenu = (props) => {
   const [activeMods, setActiveMods] = useState([]);
@@ -87,6 +90,8 @@ const MainMenu = (props) => {
     navigate("/match");
   }
 
+  const [playClick] = useSound(clickSfx, { volume: 0.25 });
+
   return (
     <div id="menu-space" className="menu">
       <div id="menu-info-toggle" onClick={() => setGameInfo(!gameInfo)}>
@@ -125,6 +130,11 @@ const MainMenu = (props) => {
           </p>
           <p>
             {" "}
+            Wait. Does that say "Game of the Year Edition"? Who gave you that title?
+            <br /> I did. It's my game of the year.
+          </p>
+          <p>
+            {" "}
             Who is making this?
             <br /> Me. Ryan Lindemuder. Just a cool guy making games.{" "}
           </p>
@@ -133,23 +143,23 @@ const MainMenu = (props) => {
       <Title />
       {screen === "mainmenu" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Multiplayer (Online)
           </button>
-          <button className="button-53" onClick={() => setScreen("singleplayer")}>
+          <button className="button-53" onClick={() => setScreen("singleplayer")} onMouseDown={playClick}>
             VS CPU (random)
           </button>
         </div>
       )}
       {screen === "multiplayer" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("createGame")}>
+          <button className="button-53" onClick={() => setScreen("createGame")} onMouseDown={playClick}>
             Create Game
           </button>
-          <button className="button-53" onClick={() => setScreen("joinGame")}>
+          <button className="button-53" onClick={() => setScreen("joinGame")} onMouseDown={playClick}>
             Join Game
           </button>
-          <button className="button-53" onClick={() => setScreen("mainmenu")}>
+          <button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
             Back
           </button>
         </div>
@@ -158,10 +168,10 @@ const MainMenu = (props) => {
         <div className="menu">
           <p>Select all mods you want to use.</p>
           <ModMenu handleModsChanged={handleModsChanged} />
-          <button className="button-53" onClick={beginSingleplayer}>
+          <button className="button-53" onClick={beginSingleplayer} onMouseDown={playClick}>
             Play
           </button>
-          <button className="button-53" onClick={() => setScreen("mainmenu")}>
+          <button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
             Back
           </button>
         </div>
@@ -175,23 +185,23 @@ const MainMenu = (props) => {
           </span>
           <p>Select all mods you want to use.</p>
           <ModMenu handleModsChanged={handleModsChanged} />
-          <button className="button-53" onClick={hostMultiplayer}>
+          <button className="button-53" onClick={hostMultiplayer} onMouseDown={playClick}>
             Host Game
           </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
           </button>
         </div>
       )}
       {screen === "joinGame" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("joinPrivateGame")}>
+          <button className="button-53" onClick={() => setScreen("joinPrivateGame")} onMouseDown={playClick}>
             Join Private Game
           </button>
-          <button className="button-53" onClick={() => setScreen("joinPublicGame")}>
+          <button className="button-53" onClick={() => setScreen("joinPublicGame")} onMouseDown={playClick}>
             Join Public Game
           </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
           </button>
         </div>
@@ -202,10 +212,10 @@ const MainMenu = (props) => {
           <br />
           <input className="menuInput" name="gameId" defaultValue="" maxLength={6} onChange={handleGameIdChanged} placeholder="Enter the game id" />
           <br />
-          <button className="button-53" onClick={joinMultiplayer} disabled={gameId.length !== 6}>
+          <button className="button-53" onClick={joinMultiplayer} disabled={gameId.length !== 6} onMouseDown={playClick}>
             Join Game
           </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")}>
+          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
           </button>
         </div>
@@ -220,15 +230,16 @@ const MainMenu = (props) => {
               </option>
             ))}
           </select>
-          <button className="button-53" onClick={refreshGames}>
+          <button className="button-53" onClick={refreshGames} onMouseDown={playClick}>
             Refresh
           </button>
           <br />
-          <button className="button-53" onClick={joinMultiplayer} disabled={peerId === ""}>
+          <button className="button-53" onClick={joinMultiplayer} disabled={peerId === ""} onMouseDown={playClick}>
             Join Game
           </button>
           <button
             className="button-53"
+            onMouseDown={playClick}
             onClick={() => {
               setScreen("multiplayer");
               setPeerId("");
