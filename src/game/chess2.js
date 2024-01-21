@@ -131,8 +131,13 @@ class Piece {
       Math.abs(move.from.row - move.to.row) === 1 &&
       Math.abs(move.from.col - move.to.col) === 1
     ) {
-      game.board[move.from.row][move.to.col] = null;
-      game.board[move.to.row][move.to.col] = this;
+      var targetPiece = game.board[move.from.row][move.to.col];
+      if (game.mods.includes("SHIELDS") && targetPiece && targetPiece.hasShield) {
+        targetPiece.hasShield = false;
+      } else {
+        game.board[move.from.row][move.to.col] = null;
+        game.board[move.to.row][move.to.col] = this;
+      }
       return true;
     }
 
