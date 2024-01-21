@@ -7,8 +7,27 @@ import Multiplayer from "./multiplayer";
 import getMultiplayer from "./multiplayer";
 import ConnectionIndicator from "./connectionIndicator";
 
+import { useSound } from "use-sound";
+import clickSfx from "../assets/Audio/PressButton.wav";
+import matchMusic from "../assets/Audio/MatchMusic.mp3";
+import snapbackSfx from "../assets/Audio/SnapbackPiece.mp3";
+import pickupPieceSfx from "../assets/Audio/PickupPiece.mp3";
+import placePieceSfx from "../assets/Audio/PlacePiece.mp3";
+import capturePieceSfx from "../assets/Audio/CapturePiece.mp3";
+import shiledUsedSfx from "../assets/Audio/ShieldUsed.mp3";
+import turnAlertSfx from "../assets/Audio/TurnAlert.mp3";
+
 const Game = (props) => {
   const navigate = useNavigate();
+  const [playClick] = useSound(clickSfx, { volume: 0.25 });
+  const [playSnapback] = useSound(snapbackSfx, { volume: 0.25 });
+  const [playPickupPiece] = useSound(pickupPieceSfx, { volume: 0.25 });
+  const [playPlacePiece] = useSound(placePieceSfx, { volume: 0.25 });
+  const [playShieldUsed] = useSound(shiledUsedSfx, { volume: 0.25 });
+  const [playCapturePiece] = useSound(capturePieceSfx, { volume: 0.25 });
+  const [playTurnAlert] = useSound(turnAlertSfx, { volume: 0.25 });
+
+  const [playMatchMusic, musicObj] = useSound(matchMusic, { volume: 0.08, loop: true, autoplay: true });
 
   useEffect(() => {
     if (!Chess().initialized) {
@@ -40,6 +59,8 @@ const Game = (props) => {
     // only pick up pieces for player color
     if (piece.color !== Chess().playerColor) return false;
 
+    playPickupPiece();
+
     return true;
   }
 
@@ -66,10 +87,20 @@ const Game = (props) => {
     var move = await Chess().move(drag);
 
     // illegal move
-    if (!move) {
+    if (!move.isLegal) {
+      playSnapback();
       return "snapback";
     } else if (props.multiplayer && Multiplayer().peerIsConnected) {
       Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
+    }
+
+    // Play sound effect
+    if (move.didCapturePiece) {
+      playCapturePiece();
+    } else if (move.hitShield) {
+      playShieldUsed();
+    } else {
+      playPlacePiece();
     }
 
     selectSquare(target);
@@ -124,6 +155,12 @@ const Game = (props) => {
   function updateUI() {
     setFogHighlights(Chess().fog());
     setGameInfo(Chess().getGameInfo());
+    var currentTurn = Chess().turn;
+    var playerColor = Chess().playerColor.charAt(0);
+    if (currentTurn === playerColor) {
+      playClick();
+      console.log("Your turn");
+    }
   }
 
   function quit() {
@@ -131,6 +168,7 @@ const Game = (props) => {
       getMultiplayer().disconnect();
       getMultiplayer().closeListing();
     }
+    musicObj.stop();
     navigate("/");
   }
 

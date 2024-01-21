@@ -6,7 +6,8 @@ import Chess from "../game/chess2";
 import Multiplayer from "../game/multiplayer";
 import useSound from "use-sound";
 
-import clickSfx from "../assets/Audio/blipSelect.wav";
+import clickSfx from "../assets/Audio/PressButton.wav";
+import menuMusic from "../assets/Audio/MenuMusic.mp3";
 
 const MainMenu = (props) => {
   const [activeMods, setActiveMods] = useState([]);
@@ -17,6 +18,8 @@ const MainMenu = (props) => {
   const [gameInfo, setGameInfo] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
   const [screen, setScreen] = useState("mainmenu"); // ["mainmenu", "multiplayer", "singleplayer", "createGame", "joinGame"]
+  const [playClick] = useSound(clickSfx, { volume: 0.25 });
+  const [playMenuMusic, musicObj] = useSound(menuMusic, { volume: 0.08, loop: true, autoplay: true });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,6 +29,7 @@ const MainMenu = (props) => {
   function beginSingleplayer() {
     props.setMultiplayer(false);
     Chess().init(activeMods, "white");
+    musicObj.stop();
     navigate("/match");
   }
 
@@ -33,6 +37,7 @@ const MainMenu = (props) => {
     Chess().init(activeMods, "white");
     props.setMultiplayer(true);
     Multiplayer().hostGame(username, activeMods, isPrivate);
+    musicObj.stop();
     navigate("/match");
   }
 
@@ -89,8 +94,6 @@ const MainMenu = (props) => {
     props.setMultiplayer(true);
     navigate("/match");
   }
-
-  const [playClick] = useSound(clickSfx, { volume: 0.25 });
 
   return (
     <div id="menu-space" className="menu">
@@ -248,33 +251,6 @@ const MainMenu = (props) => {
           </button>
         </div>
       )}
-
-      {/* <button onClick={beginSingleplayer}>Single Player</button>
-      <br />
-      <input name="username" defaultValue="" onChange={handleUsernameChanged} placeholder="Enter a username to display to opponents" />
-      <span>
-      <input onChange={handlsIsPrivateChange} type="checkbox" name="isPrivate" value={isPrivate} /> <label> Private Game?</label>
-      </span>
-      <button onClick={hostMultiplayer}>Host Game</button>
-      <span>
-        <select value={peerId} onChange={(e) => setPeerId(e.target.value)}>
-          <option value="">Select a user to join</option>
-          {openGames.map((game) => (
-            <option key={game.id} value={game.peerid}>
-              {game.username}
-            </option>
-          ))}
-        </select>
-        <button onClick={refreshGames}>Refresh</button>
-      </span>
-      <button onClick={joinMultiplayer}>Join Game</button>
-      <br />
-      <p>Select all mods you want to use.</p>
-      <div id="mod-selector">
-        <ModMenu handleModsChanged={handleModsChanged} />
-      </div>
-      <br />
-    </div> */}
     </div>
   );
 };

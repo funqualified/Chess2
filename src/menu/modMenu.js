@@ -1,7 +1,13 @@
 import { Mods } from "../managers/mods.js";
 import { useState } from "react";
+import useSound from "use-sound";
+
+import selectSfx from "../assets/Audio/SelectMod.mp3";
+import deselectSfx from "../assets/Audio/DeselectMod.mp3";
 
 const ModMenu = (props) => {
+  const [playSelect] = useSound(selectSfx, { volume: 0.25 });
+  const [playDeselect] = useSound(deselectSfx, { volume: 0.25 });
   const [selectedMods, setSelectedMods] = useState([]);
 
   function convertToCapitalCase(str) {
@@ -29,6 +35,9 @@ const ModMenu = (props) => {
     let newArray = [...selectedMods, event.target.value];
     if (selectedMods.includes(event.target.value)) {
       newArray = newArray.filter((mod) => mod !== event.target.value);
+      playDeselect();
+    } else {
+      playSelect();
     }
     setSelectedMods(newArray);
     props.handleModsChanged(newArray);

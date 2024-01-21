@@ -1032,7 +1032,7 @@ class Chess {
       if (this.mods.includes("SHIELDS") && targetPiece?.hasShield) {
         targetPiece.hasShield = false;
         await this.endTurn();
-        return true;
+        return { isLegal: true, hitShield: true, didCapturePiece: false };
       }
 
       if (this.mods.includes("VAMPIRE") && piece.isVampire && targetPiece) {
@@ -1048,8 +1048,9 @@ class Chess {
         this.board[target.row][target.col] = piece;
       }
       await this.endTurn();
+      return { isLegal: isLegal, hitShield: false, didCapturePiece: !!targetPiece };
     }
-    return isLegal;
+    return { isLegal: false, hitShield: false, didCapturePiece: false };
   }
 }
 
