@@ -571,7 +571,12 @@ class Chess {
         if (!p) {
           return null;
         }
-        return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.canPromote, p.loyalty);
+        //deep copy move types
+        var moveTypes = [];
+        p.moveTypes.forEach((element) => {
+          moveTypes.push(element);
+        });
+        return new Piece(p.color, p.fenId, p.startingIndex, p.name, moveTypes, p.hasShield, p.isVampire, p.canPromote, p.loyalty);
       });
     });
     copy.turn = this.turn;
@@ -913,7 +918,7 @@ class Chess {
       return copy;
     }
 
-    if (copy.mods.includes("VAMPIRE") && targetPiece) {
+    if (copy.mods.includes("VAMPIRE") && piece.isVampire && targetPiece) {
       targetPiece.moveTypes.forEach((value) => {
         if (!piece.moveTypes.includes(value)) {
           piece.moveTypes.push(value);

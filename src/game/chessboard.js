@@ -92,15 +92,15 @@ const Chessboard = (props) => {
                   onDragOver={(e) => e.preventDefault()}>
                   {square && !isFog(rowIndex, squareIndex) ? (
                     <img
-                    className="piece"
-                    src={imageMap[`${square.color[0]}${square.fenId.toUpperCase()}`]}
-                    alt={`${square.color[0]}${square.fenId.toUpperCase()}.svg`}
-                    onDragStart={(e) => onDragStart(e, square)}
+                      className="piece"
+                      src={imageMap[`${square.color[0]}${square.fenId.toUpperCase()}`]}
+                      alt={`${square.color[0]}${square.fenId.toUpperCase()}.svg`}
+                      onDragStart={(e) => onDragStart(e, square)}
                     />
-                    ) : (
-                      ""
-                      )}
-                      {square && !isFog(rowIndex, squareIndex) ? <PieceStateIndicator piece={square} /> : ""}
+                  ) : (
+                    ""
+                  )}
+                  {square && !isFog(rowIndex, squareIndex) ? <PieceStateIndicator piece={square} /> : ""}
                 </div>
               );
             })}
@@ -112,13 +112,17 @@ const Chessboard = (props) => {
 };
 
 const PieceStateIndicator = (props) => {
-
-
-  return <div class="piece-state-indicator">
-    {Chess().mods.includes("SHIELDS") && props.piece.hasShield && <div class="state-icon">S</div>}
-    {Chess().mods.includes("VAMPIRE") && props.piece.isVampire && <div class="state-icon">V</div>}
-    {Chess().mods.includes("LOYALTY") && <div class="state-icon">{props.piece.loyalty}</div>}
-  </div>;
+  return (
+    <div class="piece-state-indicator">
+      {Chess().mods.includes("SHIELDS") && props.piece.hasShield && <div className="state-icon">S</div>}
+      {Chess().mods.includes("VAMPIRE") && props.piece.isVampire && <div className="state-icon">V</div>}
+      {Chess().mods.includes("LOYALTY") && (
+        <div className={"number-icon " + (props.piece.loyalty > 50 ? "number-good" : props.piece.loyalty > 9 ? "number-neutral" : "number-bad")}>
+          {props.piece.loyalty}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default Chessboard;

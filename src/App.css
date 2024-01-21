@@ -577,15 +577,62 @@ input:checked + .modLabel {
   align-items: center;
   position: absolute;
   pointer-events: none;
+  gap: 0.1em;
 }
 
 .state-icon {
   align-self: flex-start;
   justify-self: flex-start;
-  width: 18%;
-  height: 18%;
+  width: 20%;
+  height: 20%;
   background-color: #007cf8;
   border-radius: 50%;
+
+  /* center text */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 0.8em;
+
+  /* bold text */
+  font-weight: bold;
+
+  /* emboss */
+  box-shadow: inset 0 0 0.5em #fff;
+}
+
+.number-icon {
+  align-self: flex-start;
+  justify-self: flex-start;
+  width: 30%;
+  height: 20%;
+  border-radius: 45%;
+
+  /* center text */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 0.8em;
+
+  /* bold text */
+  font-weight: bold;
+
+  /* emboss */
+  box-shadow: inset 0 0 0.5em #fff;
+}
+
+.number-good {
+  background-color: #00ff00;
+}
+
+.number-bad {
+  background-color: #ff0000;
+}
+
+.number-neutral {
+  background-color: #007cf8;
 }
 
 .piece {
