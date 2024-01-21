@@ -27,7 +27,7 @@ const Game = (props) => {
   const [playCapturePiece] = useSound(capturePieceSfx, { volume: 0.25 });
   const [playTurnAlert] = useSound(turnAlertSfx, { volume: 0.25 });
 
-  const [playMatchMusic, musicObj] = useSound(matchMusic, { volume: 0.08, loop: true, autoplay: true });
+  const [playMatchMusic, musicObj] = useSound(matchMusic, { volume: 0.02, loop: true, autoplay: true });
 
   useEffect(() => {
     if (!Chess().initialized) {
@@ -158,7 +158,7 @@ const Game = (props) => {
     var currentTurn = Chess().turn;
     var playerColor = Chess().playerColor.charAt(0);
     if (currentTurn === playerColor) {
-      playClick();
+      playTurnAlert();
       console.log("Your turn");
     }
   }

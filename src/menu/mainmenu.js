@@ -19,7 +19,7 @@ const MainMenu = (props) => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [screen, setScreen] = useState("mainmenu"); // ["mainmenu", "multiplayer", "singleplayer", "createGame", "joinGame"]
   const [playClick] = useSound(clickSfx, { volume: 0.25 });
-  const [playMenuMusic, musicObj] = useSound(menuMusic, { volume: 0.08, loop: true, autoplay: true });
+  const [playMenuMusic, musicObj] = useSound(menuMusic, { volume: 0.02, loop: true, autoplay: true });
   const navigate = useNavigate();
 
   useEffect(() => {
