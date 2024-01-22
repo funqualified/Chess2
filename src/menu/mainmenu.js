@@ -150,7 +150,7 @@ const MainMenu = (props) => {
             Multiplayer (Online)
           </button>
           <button className="button-53" onClick={() => setScreen("singleplayer")} onMouseDown={playClick}>
-            VS CPU (random)
+            VS CPU (very dumb AI)
           </button>
         </div>
       )}

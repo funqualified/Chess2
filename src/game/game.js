@@ -64,8 +64,8 @@ const Game = (props) => {
     return true;
   }
 
-  async function makeRandomMove() {
-    var possibleMoves = Chess().playerMoves("black");
+  async function makeAIMove() {
+    var possibleMoves = Chess().AIMoves("black");
 
     // game over
     if (possibleMoves.length === 0) return;
@@ -105,9 +105,9 @@ const Game = (props) => {
 
     selectSquare(target);
 
-    // make random legal move for black
+    // make an AI move for black
     if (!props.multiplayer && !Chess().game_over()) {
-      window.setTimeout(makeRandomMove, 250);
+      window.setTimeout(makeAIMove, 250);
     }
 
     updateUI();

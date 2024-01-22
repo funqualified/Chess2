@@ -794,6 +794,100 @@ class Chess {
     return moves;
   }
 
+  AIMoves(color) {
+    let moves = this.playerMoves(color);
+
+    //Sort moves by best to worst
+    moves.sort((a, b) => {
+      const pieceA = this.board[a.from.row][a.from.col];
+      const pieceB = this.board[b.from.row][b.from.col];
+      const targetPieceA = this.board[a.to.row][a.to.col];
+      const targetPieceB = this.board[b.to.row][b.to.col];
+
+      var score = 0;
+
+      //Check if move is a capture
+      if (!!targetPieceA && !!targetPieceB) {
+        if (targetPieceA.fenId.toLowerCase() === "q") {
+          score -= 10;
+        }
+        if (targetPieceB.fenId.toLowerCase() === "q") {
+          score += 10;
+        }
+        if (targetPieceA.fenId.toLowerCase() === "r") {
+          score -= 5;
+        }
+        if (targetPieceB.fenId.toLowerCase() === "r") {
+          score += 5;
+        }
+        if (targetPieceA.fenId.toLowerCase() === "b") {
+          score -= 3;
+        }
+        if (targetPieceB.fenId.toLowerCase() === "b") {
+          score += 3;
+        }
+        if (targetPieceA.fenId.toLowerCase() === "n") {
+          score -= 3;
+        }
+        if (targetPieceB.fenId.toLowerCase() === "n") {
+          score += 3;
+        }
+        if (targetPieceA.fenId.toLowerCase() === "p") {
+          score -= 1;
+        }
+        if (targetPieceB.fenId.toLowerCase() === "p") {
+          score += 1;
+        }
+      }
+
+      if (!!targetPieceA) {
+        score -= 5;
+      }
+      if (!!targetPieceB) {
+        score += 5;
+      }
+
+      //Check if move is to a near center square
+      const center = new GridPosition(Math.floor(this.board.length / 2), Math.floor(this.board[0].length / 2));
+      const centerA = a.to.distance(center);
+      const centerB = b.to.distance(center);
+      score += centerA - centerB;
+
+      //Check if move is a pawn move
+      if (pieceA.fenId.toLowerCase() === "p") {
+        score += 1;
+      }
+      if (pieceB.fenId.toLowerCase() === "p") {
+        score -= 1;
+      }
+
+      //Check if move is a queen move
+      if (pieceA.fenId.toLowerCase() === "q") {
+        score += 2;
+      }
+      if (pieceB.fenId.toLowerCase() === "q") {
+        score -= 2;
+      }
+
+      //Check if move is a king move
+      if (pieceA.fenId.toLowerCase() === "k") {
+        score += 5;
+      }
+      if (pieceB.fenId.toLowerCase() === "k") {
+        score -= 5;
+      }
+
+      return score;
+    });
+
+    //limit moves to 5
+    if (moves.length > 5) {
+      moves = moves.slice(0, 5);
+    }
+
+    return moves;
+  }
+
   getPlayerSight(color) {
     let sight = [];
     this.playerMoves(color).forEach((move) => {
