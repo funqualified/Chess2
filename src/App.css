@@ -91,16 +91,20 @@
   background-color: #eee;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: flex-start;
   border: #000000 solid 2px;
   z-index: 1;
+
+  padding-top: 30px;
+
+  overflow: scroll;
 }
 
 #menu-info-box > p {
   margin-left: 10%;
   margin-right: 10%;
-  font-size: 1.5em;
+  font-size: 1.2em;
   color: black;
 }
 
@@ -127,6 +131,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  min-width: 300px;
 }
 
 p {
@@ -530,6 +536,8 @@ input:checked + .modLabel {
 .square {
   width: 100px;
   height: 100px;
+  max-width: 10vw;
+  max-height: 10vw;
   display: flex;
   justify-content: center;
   align-items: center;

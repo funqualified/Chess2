@@ -147,10 +147,14 @@ const MainMenu = (props) => {
       {screen === "mainmenu" && (
         <div className="menu">
           <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
-            Multiplayer (Online)
+            Multiplayer
+            <br />
+            (Online)
           </button>
           <button className="button-53" onClick={() => setScreen("singleplayer")} onMouseDown={playClick}>
-            VS CPU (very dumb AI)
+            VS CPU
+            <br />
+            (very dumb AI)
           </button>
         </div>
       )}
