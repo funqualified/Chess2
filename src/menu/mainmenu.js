@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Chess from "../game/chess2";
 import Multiplayer from "../game/multiplayer";
+import VersionFooter from "../versionFooter";
 import useSound from "use-sound";
 
 import clickSfx from "../assets/Audio/PressButton.wav";
@@ -255,6 +256,7 @@ const MainMenu = (props) => {
           </button>
         </div>
       )}
+      <VersionFooter />
     </div>
   );
 };

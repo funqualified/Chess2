@@ -6,6 +6,7 @@ import Chess from "./chess2";
 import Multiplayer from "./multiplayer";
 import getMultiplayer from "./multiplayer";
 import ConnectionIndicator from "./connectionIndicator";
+import VersionFooter from "../versionFooter";
 
 import { useSound } from "use-sound";
 import clickSfx from "../assets/Audio/PressButton.wav";
@@ -201,6 +202,7 @@ const Game = (props) => {
         <button onClick={quit}>Quit Game</button>
         {props.multiplayer ? "" : <button onClick={undo}>Undo</button>}
       </div>
+      <VersionFooter />
     </div>
   );
 };

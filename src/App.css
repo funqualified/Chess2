@@ -647,3 +647,13 @@ input:checked + .modLabel {
   position: absolute;
   width: 80%;
 }
+
+#version-footer {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 0.8em;
+  color: #eee;
+  margin: 0;
+  padding: 0;
+}
