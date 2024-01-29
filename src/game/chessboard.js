@@ -1,6 +1,7 @@
 import Chess from "./chess2";
 import GridPosition from "../models/gridPosition";
 import { useState, useEffect } from "react";
+import { func } from "prop-types";
 
 const Chessboard = (props) => {
   const imageMap = {
@@ -61,6 +62,22 @@ const Chessboard = (props) => {
     props.onMouseOverSquare(square);
   }
 
+  function onTouchStart(ev, row, col, piece) {
+    ev.preventDefault();
+    var square = new GridPosition(row, col);
+    props.onMouseOverSquare(square);
+    if (heldPiece == null && piece != null) {
+      if (props.onDragStart(piece)) {
+        setHeldPiece(piece);
+      }
+    }
+    if (heldPiece != null) {
+      var dropPiece = heldPiece;
+      setHeldPiece(null);
+      props.onDrop(dropPiece, new GridPosition(row, col));
+    }
+  }
+
   var board = props.orientation == "black" ? Chess().board.slice(0).reverse() : Chess().board;
 
   return (
@@ -83,7 +100,8 @@ const Chessboard = (props) => {
                   onMouseOver={() => onMouseOverSquare(rowIndex, squareIndex)}
                   onMouseOut={() => props.onMouseoutSquare(square)}
                   onDrop={(e) => onDragEnd(e, heldPiece, rowIndex, squareIndex)}
-                  onDragOver={(e) => e.preventDefault()}>
+                  onDragOver={(e) => e.preventDefault()}
+                  onTouchStart={(e) => onTouchStart(e, rowIndex, squareIndex, square)}>
                   {square && !isFog(rowIndex, squareIndex) ? (
                     <img
                       className="piece"
