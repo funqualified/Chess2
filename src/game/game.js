@@ -175,6 +175,7 @@ const Game = (props) => {
 
   function undo() {
     Chess().undo();
+    Chess().undo();
     updateUI();
   }
 
