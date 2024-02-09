@@ -49,7 +49,7 @@ class Multiplayer {
           mods: Chess().mods,
           board: JSON.stringify(Chess().board),
           turn: Chess().turn,
-          enPassant: Chess().enPassant,
+          enPassant: JSON.stringify(Chess().enPassant),
         });
       });
 
