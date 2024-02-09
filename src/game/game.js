@@ -92,7 +92,14 @@ const Game = (props) => {
       playSnapback();
       return "snapback";
     } else if (props.multiplayer && Multiplayer().peerIsConnected) {
-      Multiplayer().conn.send({ board: JSON.stringify(Chess().board), turn: Chess().turn, winner: Chess().winner, enPassant: Chess().enPassant });
+      const data = {
+        board: JSON.stringify(Chess().board),
+        turn: Chess().turn,
+        winner: Chess().winner,
+        enPassant: Chess().enPassant,
+      };
+      console.dir(data);
+      Multiplayer().conn.send(data);
     }
 
     // Play sound effect
