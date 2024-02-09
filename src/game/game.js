@@ -96,9 +96,8 @@ const Game = (props) => {
         board: JSON.stringify(Chess().board),
         turn: Chess().turn,
         winner: Chess().winner,
-        enPassant: Chess().enPassant,
+        enPassant: JSON.stringify(Chess().enPassant),
       };
-      console.dir(data);
       Multiplayer().conn.send(data);
     }
 
