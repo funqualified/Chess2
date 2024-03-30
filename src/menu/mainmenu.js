@@ -10,6 +10,10 @@ import useSound from "use-sound";
 import clickSfx from "../assets/Audio/PressButton.wav";
 import menuMusic from "../assets/Audio/MenuMusic.mp3";
 
+import Button from "@mui/joy/Button";
+import Modal from "@mui/joy/Modal";
+import ModalClose from "@mui/joy/ModalClose";
+
 const MainMenu = (props) => {
   const [activeMods, setActiveMods] = useState([]);
   const [openGames, setOpenGames] = useState([]);
@@ -98,90 +102,90 @@ const MainMenu = (props) => {
 
   return (
     <div id="menu-space" className="menu">
-      <div id="menu-info-toggle" onClick={() => setGameInfo(!gameInfo)}>
+      <Button id="menu-info-toggle" onClick={() => setGameInfo(!gameInfo)}>
         i
-      </div>
+      </Button>
       {gameInfo && (
-        <div id="menu-info-box">
-          <div id="menu-info-close" onClick={() => setGameInfo(false)}>
-            X
+        <Modal open={gameInfo} onClose={() => setGameInfo(false)}>
+          <div id="menu-info-box">
+            <ModalClose onClick={() => setGameInfo(false)}>X</ModalClose>
+            <p> Chess 2 - Game of the Year Edition</p>
+            <p>
+              {" "}
+              What is it?
+              <br /> Chess, but better. Inpired by a number of things, ultimately Chess 2 is an attempt to add robust mod support to the centuries old game of
+              Chess.
+            </p>
+            <p>
+              {" "}
+              Did you say mods?
+              <br /> I sure did. For now, you can play with a number of built in modification to the base rules of Chess. But as we approach a full release, the
+              game will open up to community mod support. I hope for Chess 2 to be the top way to play established chess variant, new rules additions, and wacky
+              absurdity.
+            </p>
+            <p>
+              {" "}
+              How do I play?
+              <br /> Pick singleplayer or multiplayer, add some mods, and start playing. Unless a mod changes something, all the standard rules of chess are in
+              play. In multiplayer you can create private matches and send the session code to a friend. You can also start or join a public game to play with a
+              stranger.
+            </p>
+            <p>
+              {" "}
+              When will the full game be ready?
+              <br /> Probably late 2024.
+            </p>
+            <p>
+              {" "}
+              Wait. Does that say "Game of the Year Edition"? Who gave you that title?
+              <br /> I did. It's my game of the year.
+            </p>
+            <p>
+              {" "}
+              Who is making this?
+              <br /> Me. Ryan Lindemuder. Just a cool guy making games.{" "}
+            </p>
           </div>
-          <p> Chess 2 - Game of the Year Edition</p>
-          <p>
-            {" "}
-            What is it?
-            <br /> Chess, but better. Inpired by a number of things, ultimately Chess 2 is an attempt to add robust mod support to the centuries old game of
-            Chess.
-          </p>
-          <p>
-            {" "}
-            Did you say mods?
-            <br /> I sure did. For now, you can play with a number of built in modification to the base rules of Chess. But as we approach a full release, the
-            game will open up to community mod support. I hope for Chess 2 to be the top way to play established chess variant, new rules additions, and wacky
-            absurdity.
-          </p>
-          <p>
-            {" "}
-            How do I play?
-            <br /> Pick singleplayer or multiplayer, add some mods, and start playing. Unless a mod changes something, all the standard rules of chess are in
-            play. In multiplayer you can create private matches and send the session code to a friend. You can also start or join a public game to play with a
-            stranger.
-          </p>
-          <p>
-            {" "}
-            When will the full game be ready?
-            <br /> Probably late 2024.
-          </p>
-          <p>
-            {" "}
-            Wait. Does that say "Game of the Year Edition"? Who gave you that title?
-            <br /> I did. It's my game of the year.
-          </p>
-          <p>
-            {" "}
-            Who is making this?
-            <br /> Me. Ryan Lindemuder. Just a cool guy making games.{" "}
-          </p>
-        </div>
+        </Modal>
       )}
       <Title />
       {screen === "mainmenu" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
+          <Button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Multiplayer
             <br />
             (Online)
-          </button>
-          <button className="button-53" onClick={() => setScreen("singleplayer")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("singleplayer")} onMouseDown={playClick}>
             VS CPU
             <br />
             (very dumb AI)
-          </button>
+          </Button>
         </div>
       )}
       {screen === "multiplayer" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("createGame")} onMouseDown={playClick}>
+          <Button className="button-53" onClick={() => setScreen("createGame")} onMouseDown={playClick}>
             Create Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("joinGame")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("joinGame")} onMouseDown={playClick}>
             Join Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       {screen === "singleplayer" && (
         <div className="menu">
           <p>Select all mods you want to use.</p>
           <ModMenu handleModsChanged={handleModsChanged} />
-          <button className="button-53" onClick={beginSingleplayer} onMouseDown={playClick}>
+          <Button className="button-53" onClick={beginSingleplayer} onMouseDown={playClick}>
             Play
-          </button>
-          <button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("mainmenu")} onMouseDown={playClick}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       {screen === "createGame" && (
@@ -193,25 +197,25 @@ const MainMenu = (props) => {
           </span>
           <p>Select all mods you want to use.</p>
           <ModMenu handleModsChanged={handleModsChanged} />
-          <button className="button-53" onClick={hostMultiplayer} onMouseDown={playClick}>
+          <Button className="button-53" onClick={hostMultiplayer} onMouseDown={playClick}>
             Host Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       {screen === "joinGame" && (
         <div className="menu">
-          <button className="button-53" onClick={() => setScreen("joinPrivateGame")} onMouseDown={playClick}>
+          <Button className="button-53" onClick={() => setScreen("joinPrivateGame")} onMouseDown={playClick}>
             Join Private Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("joinPublicGame")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("joinPublicGame")} onMouseDown={playClick}>
             Join Public Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       {screen === "joinPrivateGame" && (
@@ -220,12 +224,12 @@ const MainMenu = (props) => {
           <br />
           <input className="menuInput" name="gameId" defaultValue="" maxLength={6} onChange={handleGameIdChanged} placeholder="Enter the game id" />
           <br />
-          <button className="button-53" onClick={joinMultiplayer} disabled={gameId.length !== 6} onMouseDown={playClick}>
+          <Button className="button-53" onClick={joinMultiplayer} disabled={gameId.length !== 6} onMouseDown={playClick}>
             Join Game
-          </button>
-          <button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
+          </Button>
+          <Button className="button-53" onClick={() => setScreen("multiplayer")} onMouseDown={playClick}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       {screen === "joinPublicGame" && (
@@ -238,14 +242,14 @@ const MainMenu = (props) => {
               </option>
             ))}
           </select>
-          <button className="button-53" onClick={refreshGames} onMouseDown={playClick}>
+          <Button className="button-53" onClick={refreshGames} onMouseDown={playClick}>
             Refresh
-          </button>
+          </Button>
           <br />
-          <button className="button-53" onClick={joinMultiplayer} disabled={peerId === ""} onMouseDown={playClick}>
+          <Button className="button-53" onClick={joinMultiplayer} disabled={peerId === ""} onMouseDown={playClick}>
             Join Game
-          </button>
-          <button
+          </Button>
+          <Button
             className="button-53"
             onMouseDown={playClick}
             onClick={() => {
@@ -253,7 +257,7 @@ const MainMenu = (props) => {
               setPeerId("");
             }}>
             Back
-          </button>
+          </Button>
         </div>
       )}
       <VersionFooter />

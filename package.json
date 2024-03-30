@@ -1,10 +1,13 @@
 {
   "name": "chesstwo",
-  "version": "1.0.4a",
+  "version": "1.0.5",
   "description": "GOTY Edition",
   "main": "main.js",
   "homepage": "./",
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@mui/joy": "^5.0.0-beta.32",
     "@sentry/react": "^7.57.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -26,7 +29,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^24.1.2",
+    "electron": "^24.8.8",
+    "electron-builder": "^24.9.1",
+    "electron-is-dev": "^3.0.1",
     "react-router-dom": "^6.14.1"
   },
   "eslintConfig": {

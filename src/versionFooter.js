@@ -3,7 +3,7 @@
 const VersionFooter = () => {
   return (
     <div id="version-footer">
-      <p>Version 1.0.4a</p>
+      <p>Version 1.0.5</p>
     </div>
   );
 };
