@@ -175,6 +175,10 @@ input[type="checkbox"] {
   .game {
     flex-direction: column;
   }
+
+  .game > .board {
+    padding-top: 3em;
+  }
 }
 
 .game.hide {
