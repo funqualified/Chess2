@@ -24,6 +24,19 @@ function pieceFactory(fenId, index) {
   }
 }
 
+async function gameEvent(type, game, data) {
+  var action = "continue";
+  await game.mods.forEach(async (mod) => {
+    if (mod.events[type]) {
+      action = await mod.events[type](game, data);
+    }
+    if (action === "noDefault" || action === "noMods" || action === "noDefaultNoMods") {
+      return;
+    }
+  });
+  return action === "continue" || action === "noMods";
+}
+
 class Piece {
   constructor(color, fenId, startingIndex, name = fenId, moveTypes = [], hasShield = false, isVampire = false, canPromote = false, loyalty = 10) {
     this.color = color;
@@ -71,28 +84,14 @@ class Piece {
 
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color === "white" && index.row === 0) || (this.color === "black" && index.row === 7))) {
-      if (game.mods.includes("QTE_PROMOTION")) {
-        if (this.color !== game.playerColor) {
-          var value = Math.random() * 51;
-        } else {
-          var value = defaultAction ? "q" : await gameplayUIManager().QTUI();
-        }
-        var fen = null;
-        if (value < 10) {
-          fen = "q";
-        } else if (value < 20) {
-          fen = "n";
-        } else if (value < 35) {
-          fen = "b";
-        } else if (value < 50) {
-          fen = "r";
-        }
-        if (fen === null) {
-          game.board[index.row][index.col] = null;
-        } else {
-          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
-        }
-      } else {
+      const performDefaultAction = await gameEvent("Promotion", game, {
+        index: index,
+        piece: this,
+        gameplayUIManager: gameplayUIManager,
+        defaultAction: defaultAction,
+        pieceFactory: pieceFactory,
+      });
+      if (performDefaultAction) {
         if (this.color !== game.playerColor) {
           game.board[index.row][index.col] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
