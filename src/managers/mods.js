@@ -75,35 +75,8 @@ const Mods = [
     name: "Quicktime Promotion",
     description: "Pawn promotion requires a quicktime minigame",
     tags: ["promotion", "Rule Change"],
-    nonCompatibleIDs: [],
-    nonCompatibleTags: ["promotion"],
     spice: 2,
     uid: "QTE_PROMOTION",
-    events: {
-      Promotion: async (game, data) => {
-        if (data.piece.color !== game.playerColor) {
-          var value = Math.random() * 51;
-        } else {
-          var value = data.defaultAction ? "q" : await data.gameplayUIManager().QTUI();
-        }
-        var fen = null;
-        if (value < 10) {
-          fen = "q";
-        } else if (value < 20) {
-          fen = "n";
-        } else if (value < 35) {
-          fen = "b";
-        } else if (value < 50) {
-          fen = "r";
-        }
-        if (fen === null) {
-          game.board[data.index.row][data.index.col] = null;
-        } else {
-          game.board[data.index.row][data.index.col] = data.pieceFactory(data.piece.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
-        }
-        return "noDefaultNoMods";
-      },
-    },
   },
   {
     name: "No En Passant",
