@@ -1,30 +1,53 @@
 import gameplayUIManager from "./gameplayUI";
 import GridPosition from "../models/gridPosition";
-import { Mods } from "../managers/mods";
-import getName from "../mods/PieceNames";
 
-function pieceFactory(fenId, index) {
-  const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
-  switch (fenId.toLowerCase()) {
-    case "p":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("pawn") : "Pawn", ["pawn"], true, false, true);
-    case "b":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("bishop") : "Bishop", ["diagonal"]);
-    case "n":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("knight") : "Knight", ["knight"], false, true);
-    case "r":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("rook") : "Rook", ["rook"]);
-    case "q":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("queen") : "Queen", ["vertical", "horizontal", "diagonal"], false, true);
-    case "k":
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName("king") : "King", ["king"], false, true, false, 100);
-    default:
-      console.log("Unrecognized piece");
-      return new Piece(color, fenId, index, instance.mods.includes("NAMES") ? getName() : "");
-  }
+function clonePiece(piece) {
+  var p = new Piece(piece.color, piece.fenId, piece.startingIndex, piece.name, piece.moveTypes, piece.canPromote);
+  Object.keys(piece).forEach((key) => {
+    p[key] = piece[key];
+  });
+  return p;
 }
 
-async function gameEvent(type, game, data) {
+function pieceFactory(game, fenId, index) {
+  const color = fenId >= "A" && fenId <= "Z" ? "white" : "black";
+  var piece = new Piece(color, fenId, index);
+  piece.canPromote = false;
+  switch (fenId.toLowerCase()) {
+    case "p":
+      piece.moveTypes = ["pawn"];
+      piece.name = "Pawn";
+      piece.canPromote = true;
+      break;
+    case "b":
+      piece.moveTypes = ["diagonal"];
+      piece.name = "Bishop";
+      break;
+    case "n":
+      piece.moveTypes = ["knight"];
+      piece.name = "Knight";
+      break;
+    case "r":
+      piece.moveTypes = ["rook"];
+      piece.name = "Rook";
+      break;
+    case "q":
+      piece.moveTypes = ["vertical", "horizontal", "diagonal"];
+      piece.name = "Queen";
+      break;
+    case "k":
+      piece.moveTypes = ["king"];
+      piece.name = "King";
+      break;
+    default:
+      console.log("Unrecognized piece");
+  }
+
+  gameEvent("PieceCreated", game, { piece: piece });
+  return piece;
+}
+
+async function gameEventAsync(type, game, data) {
   var action = "continue";
   await game.mods.forEach(async (mod) => {
     if (mod.events[type]) {
@@ -37,15 +60,25 @@ async function gameEvent(type, game, data) {
   return action === "continue" || action === "noMods";
 }
 
+function gameEvent(type, game, data) {
+  var action = "continue";
+  game.mods.forEach((mod) => {
+    if (mod.events[type]) {
+      action = mod.events[type](game, data);
+    }
+    if (action === "noDefault" || action === "noMods" || action === "noDefaultNoMods") {
+      return;
+    }
+  });
+  return action === "continue" || action === "noMods";
+}
+
 class Piece {
-  constructor(color, fenId, startingIndex, name = fenId, moveTypes = [], hasShield = false, isVampire = false, canPromote = false, loyalty = 10) {
+  constructor(color, fenId, startingIndex, name = fenId, moveTypes = [], canPromote = false) {
     this.color = color;
     this.fenId = fenId;
     this.moveTypes = moveTypes;
-    this.hasShield = hasShield;
-    this.isVampire = isVampire;
-    this.name = isVampire && instance.mods.includes("NAMES") ? getName("vampire") : name;
-    this.loyalty = loyalty;
+    this.name = name;
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
   }
@@ -62,38 +95,21 @@ class Piece {
   }
 
   async endOfTurn(game, moves, defaultAction = false) {
-    if (game.mods.includes("LOYALTY")) {
-      if (this.fenId.toLowerCase() === "k") {
-        this.loyalty = 100;
-      } else {
-        this.loyalty += 1;
-        moves.forEach((move) => {
-          if (game.board[move.to.row][move.to.col] === this) {
-            this.loyalty -= 2;
-          }
-        });
-      }
-      if (this.loyalty > 100) {
-        this.loyalty = 100;
-      }
-      if (this.loyalty < 0) {
-        this.loyalty = Math.abs(this.loyalty);
-        this.color = this.color === "white" ? "black" : "white";
-      }
-    }
+    gameEventAsync("PieceEndOfTurn", game, { piece: this, moves: moves });
 
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color === "white" && index.row === 0) || (this.color === "black" && index.row === 7))) {
-      const performDefaultAction = await gameEvent("Promotion", game, {
+      const performDefaultAction = await gameEventAsync("Promotion", game, {
         index: index,
         piece: this,
         gameplayUIManager: gameplayUIManager,
         defaultAction: defaultAction,
         pieceFactory: pieceFactory,
       });
+      console.log(performDefaultAction);
       if (performDefaultAction) {
         if (this.color !== game.playerColor) {
-          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
+          game.board[index.row][index.col] = pieceFactory(game, this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
           var fen = defaultAction
             ? "q"
@@ -103,7 +119,7 @@ class Piece {
                 { label: "Bishop", response: "b" },
                 { label: "Knight", response: "n" },
               ]);
-          game.board[index.row][index.col] = pieceFactory(this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
+          game.board[index.row][index.col] = pieceFactory(game, this.color === "white" ? fen.toUpperCase() : fen.toLowerCase());
         }
       }
     }
@@ -191,16 +207,19 @@ class Piece {
 
   info(game) {
     let details = "";
-    details += game.mods.includes("NAMES") ? `${this.name}\n` : `${this.color.charAt(0).toUpperCase() + this.color.slice(1)} ${this.name}\n`;
-    details += "Abilities:\n";
-    if (this.isVampire) {
-      details += "Move " + this.moveTypes + "\n";
-    }
-    if (game.mods.includes("SHIELDS") && this.hasShield) {
-      details += "Shielded\n";
-    }
-    if (game.mods.includes("LOYALTY")) {
-      details += `Loyalty:${this.loyalty}\n`;
+    details += `${this.name}\n`;
+    details += `Color: ${this.color}\n`;
+
+    var data = {
+      abilities: "",
+      piece: this,
+    };
+
+    gameEvent("PieceInfo", game, data);
+
+    if (data.abilities !== "") {
+      details += "Abilities:\n";
+      details += data.abilities;
     }
     return details;
   }
@@ -556,7 +575,7 @@ class Chess {
           if (!p) {
             return null;
           }
-          return new Piece(p.color, p.fenId, p.startingIndex, p.name, p.moveTypes, p.hasShield, p.isVampire, p.canPromote, p.loyalty);
+          return clonePiece(p);
         });
       });
       this.turn = move.turn;
@@ -580,7 +599,7 @@ class Chess {
         p.moveTypes.forEach((element) => {
           moveTypes.push(element);
         });
-        return new Piece(p.color, p.fenId, p.startingIndex, p.name, moveTypes, p.hasShield, p.isVampire, p.canPromote, p.loyalty);
+        return clonePiece(p);
       });
     });
     copy.turn = this.turn;
@@ -617,7 +636,7 @@ class Chess {
         const char = rows[i][j];
 
         if (isNaN(char)) {
-          row.push(pieceFactory(char, new GridPosition(i, j)));
+          row.push(pieceFactory(this, char, new GridPosition(i, j)));
         } else {
           for (let o = 0; o < parseInt(char); o++) {
             row.push(null);
@@ -631,119 +650,51 @@ class Chess {
 
       this.board.push(row);
     }
+    this.moves = this.getMoves();
   }
 
   getInitialFen() {
-    if (this.mods.includes("RANDOM_START")) {
-      var possitionsArr = [null, null, null, null, null, null, null, null];
-      possitionsArr[Math.floor(Math.random() * 4) * 2] = "b";
-      possitionsArr[Math.floor(Math.random() * 4) * 2 + 1] = "b";
-
-      var i = -1;
-      var queenIndex = Math.floor(Math.random() * 6);
-      while (i < queenIndex) {
-        i++;
-        if (possitionsArr[i] !== null) {
-          queenIndex++;
-        }
-      }
-      possitionsArr[i] = "q";
-
-      i = -1;
-      var knightOneIndex = Math.floor(Math.random() * 5);
-      while (i < knightOneIndex) {
-        i++;
-        if (possitionsArr[i] !== null) {
-          knightOneIndex++;
-        }
-      }
-      possitionsArr[i] = "n";
-
-      i = -1;
-      var knightTwoIndex = Math.floor(Math.random() * 4);
-      while (i < knightTwoIndex) {
-        i++;
-        if (possitionsArr[i] !== null) {
-          knightTwoIndex++;
-        }
-      }
-      possitionsArr[i] = "n";
-
-      var x = 2;
-      i = 0;
-      while (x >= 0) {
-        if (possitionsArr[i] === null) {
-          if (x === 2 || x === 0) {
-            possitionsArr[i] = "r";
-          } else {
-            possitionsArr[i] = "k";
-          }
-          x--;
-        }
-        i++;
-      }
-
-      return `${possitionsArr.join("")}/pppppppp/8/8/8/8/PPPPPPPP/${possitionsArr.join("").toUpperCase()} w KQkq - 0 1`;
-    } else {
-      return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    var data = {
+      fen: "",
+    };
+    const defaultAction = gameEvent("BoardSetup", this, data);
+    console.log(defaultAction);
+    console.log(data.fen);
+    if (defaultAction) {
+      data.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
+
+    return data.fen;
   }
 
   getPieceInfo(square) {
     const piece = this.board[square.row][square.col];
     if (piece) {
-      if (this.mods.includes("FOG")) {
-        let sight = this.getPlayerSight(this.playerColor);
-        if (square.isIn(sight) || piece.color === this.playerColor) {
-          return piece.info(this);
-        }
-        return null;
+      let sight = this.getPlayerSight(this.playerColor);
+      if (square.isIn(sight) || piece.color === this.playerColor) {
+        return piece.info(this);
       }
-      return piece.info(this);
+      return null;
     }
     return null;
   }
 
   getGameInfo() {
     if (this.winner === null) {
-      return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods.join("\n")}`;
+      return `Current turn: ${this.turn === "w" ? "white" : "black"}\nMods\n${this.mods.map((mod) => mod.description).join("\n")}`;
     } else {
       return `The winner is ${this.winner}`;
     }
   }
 
   getGameWinner() {
-    if (this.mods.includes("ELIMINATION")) {
-      var hasValidMove = false;
-      var whiteHasPieces = false;
-      var blackHasPieces = false;
-      for (let i = 0; i < this.board.length; i++) {
-        for (let j = 0; j < this.board[i].length; j++) {
-          const piece = this.board[i][j];
-          if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves(new GridPosition(i, j)).length > 0) {
-              hasValidMove = true;
-            }
-            if (piece.color.charAt(0) === "w") {
-              whiteHasPieces = true;
-            } else {
-              blackHasPieces = true;
-            }
-          }
-        }
-      }
-      //TODO: Doesn't matter now, but in the future, there could be an edge case where white and black lose all pieces at the same time
-      // Come to think of it, I may need to add draws as a result for the normal win detector.
-      if (!whiteHasPieces && !blackHasPieces) {
-        return "draw";
-      }
-      if (!whiteHasPieces) {
-        return "black";
-      }
-      if (!blackHasPieces) {
-        return "white";
-      }
-      return null;
+    var data = {
+      winner: null,
+    };
+    const defaultAction = gameEvent("CheckForWinner", this, data);
+
+    if (!defaultAction) {
+      return data.winner;
     }
 
     var winner = null;
@@ -752,7 +703,7 @@ class Chess {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color.charAt(0) === this.turn) {
-          this.moves(new GridPosition(i, j)).forEach((move) => {
+          this.movesByFrom(new GridPosition(i, j)).forEach((move) => {
             var target = this.board[move.to.row][move.to.col];
             hasValidMove = true;
             if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
@@ -770,13 +721,13 @@ class Chess {
     return winner;
   }
 
-  playerMoves(color, playerVisable = false) {
+  getMoves() {
     let moves = [];
 
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
-        if (!!piece && (color === "" || !color || color === piece.color)) {
+        if (!!piece) {
           for (let x = 0; x < this.board.length; x++) {
             for (let y = 0; y < this.board[x].length; y++) {
               if (this.isLegalMove(new GridPosition(i, j), new GridPosition(x, y))) {
@@ -790,11 +741,20 @@ class Chess {
         }
       }
     }
+    console.log(moves);
     return moves;
   }
 
+  movesByColor(color) {
+    return this.moves.filter((move) => this.board[move.from.row][move.from.col].color === color);
+  }
+
+  movesByFrom(from) {
+    return this.moves.filter((move) => move.from.equals(from));
+  }
+
   AIMoves(color) {
-    let moves = this.playerMoves(color);
+    let moves = this.movesByColor(color);
 
     //Sort moves by best to worst
     moves.sort((a, b) => {
@@ -889,7 +849,7 @@ class Chess {
 
   getPlayerSight(color) {
     let sight = [];
-    this.playerMoves(color).forEach((move) => {
+    this.movesByColor(color).forEach((move) => {
       sight.push(move.to);
     });
     //Add all pawn forward diagonals to sight
@@ -916,29 +876,6 @@ class Chess {
       }
     }
     return sight;
-  }
-
-  moves(from, playerVisable = false) {
-    let moves = [];
-
-    let sight = this.getPlayerSight(this.playerColor);
-
-    const piece = this.board[from.row][from.col];
-    if (!playerVisable || !this.mods.includes("FOG") || from.isIn(sight) || piece?.color === this.playerColor) {
-      for (let x = 0; x < this.board.length; x++) {
-        for (let y = 0; y < this.board[x].length; y++) {
-          if (this.isLegalMove(from, new GridPosition(x, y))) {
-            moves.push({
-              from: from,
-              to: new GridPosition(x, y),
-            });
-          }
-        }
-      }
-      return moves;
-    }
-
-    return moves;
   }
 
   isCheck(color, kingIndex, board) {
@@ -1002,30 +939,30 @@ class Chess {
 
   //Creates a copy of the entire game and simulates the move on the copy
   simulateMove(from, to) {
+    //TODO: This works a bit differently than the move function, should be refactored to be more similar.
+    //eg. why doesn't this check for legal? Why doesn't the input take a move object
     const copy = this.copy();
     const source = from;
     const target = to;
     const piece = copy.board[source.row][source.col];
     const targetPiece = copy.board[target.row][target.col];
 
-    piece.move(copy, { from: source, to: target });
+    var moveHandled = piece.move(copy, { from: source, to: target });
 
-    if (copy.mods.includes("SHIELDS") && targetPiece?.hasShield) {
-      targetPiece.hasShield = false;
-      copy.endTurn(true);
-      return copy;
+    var returnVal = { isLegal: true, hitShield: false, didCapturePiece: !!targetPiece };
+    var defaultAction = gameEvent("Move", copy, {
+      source: source,
+      target: target,
+      targetPiece: targetPiece,
+      piece: piece,
+      moveHandled: moveHandled,
+      returnVal: returnVal,
+    });
+
+    if (!moveHandled || !defaultAction) {
+      copy.board[source.row][source.col] = null;
+      copy.board[target.row][target.col] = piece;
     }
-
-    if (copy.mods.includes("VAMPIRE") && piece.isVampire && targetPiece) {
-      targetPiece.moveTypes.forEach((value) => {
-        if (!piece.moveTypes.includes(value)) {
-          piece.moveTypes.push(value);
-        }
-      });
-    }
-
-    copy.board[source.row][source.col] = null;
-    copy.board[target.row][target.col] = piece;
     copy.endTurn(true);
 
     return copy;
@@ -1047,6 +984,7 @@ class Chess {
 
     //Ensure move doesn't put or keep the player in check
     if (!this.isCopy && !this.mods.includes("ELIMINATION")) {
+      //TODO: Handle elminination mod through game events
       const simulatedGame = this.simulateMove(from, to);
       if (simulatedGame.isInCheck(piece.color)) {
         return false;
@@ -1061,41 +999,32 @@ class Chess {
   }
 
   async endTurn(simulatedMove = false) {
+    //Flip the turn
     this.turn = this.turn === "w" ? "b" : "w";
 
+    //Check for winner
     if (!simulatedMove) this.winner = this.getGameWinner();
     if (this.winner !== null) {
       return;
     }
 
-    const moves = this.playerMoves();
+    //Run end of turn for all pieces
     for (let x = 0; x < this.board.length; x++) {
       for (let y = 0; y < this.board[x].length; y++) {
-        await this.board[x][y]?.endOfTurn(this, moves, simulatedMove);
+        await this.board[x][y]?.endOfTurn(this, this.moves, simulatedMove);
       }
     }
 
-    if (this.mods.includes("ELIMINATION")) {
-      var hasValidMove = false;
-      for (let i = 0; i < this.board.length; i++) {
-        for (let j = 0; j < this.board[i].length; j++) {
-          const piece = this.board[i][j];
-          if (piece !== null) {
-            if (piece.color.charAt(0) === this.turn && this.moves(new GridPosition(i, j)).length > 0) {
-              hasValidMove = true;
-            }
-          }
-        }
-      }
-      if (!hasValidMove) {
-        this.turn = this.turn === "w" ? "b" : "w";
-      }
-    }
-
+    //track en passant
     if (!this.enPassant.equals(new GridPosition(-1, -1)) && !this.justDoubleMovedPawn) {
       this.enPassant = new GridPosition(-1, -1);
     }
     this.justDoubleMovedPawn = false;
+
+    this.moves = this.getMoves();
+
+    //End of turn for mods
+    gameEvent("EndOfTurn", this, {});
   }
 
   fog() {
@@ -1132,26 +1061,23 @@ class Chess {
 
       const moveHandled = piece.move(this, { from: source, to: target });
 
-      if (this.mods.includes("SHIELDS") && targetPiece?.hasShield) {
-        targetPiece.hasShield = false;
-        await this.endTurn();
-        return { isLegal: true, hitShield: true, didCapturePiece: false };
-      }
+      var returnVal = { isLegal: isLegal, hitShield: false, didCapturePiece: !!targetPiece };
+      var defaultAction = gameEvent("Move", this, {
+        source: source,
+        target: target,
+        targetPiece: targetPiece,
+        piece: piece,
+        moveHandled: moveHandled,
+        returnVal: returnVal,
+      });
 
-      if (this.mods.includes("VAMPIRE") && piece.isVampire && targetPiece) {
-        targetPiece.moveTypes.forEach((value) => {
-          if (!piece.moveTypes.includes(value)) {
-            piece.moveTypes.push(value);
-          }
-        });
-      }
-
-      if (!moveHandled) {
+      if (!moveHandled || !defaultAction) {
         this.board[source.row][source.col] = null;
         this.board[target.row][target.col] = piece;
       }
+
       await this.endTurn();
-      return { isLegal: isLegal, hitShield: false, didCapturePiece: !!targetPiece };
+      return returnVal;
     }
     return { isLegal: false, hitShield: false, didCapturePiece: false };
   }
@@ -1167,4 +1093,4 @@ function getChess() {
 }
 
 export default getChess;
-export { Piece };
+export { Piece, clonePiece };

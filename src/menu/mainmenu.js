@@ -62,7 +62,7 @@ const MainMenu = (props) => {
   }
 
   function refreshGames() {
-    fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/games", { mode: "cors" })
+    fetch("http://central-funqualified-server-9a93df127526.herokuapp.com/api/chess?action=getOpenGames", { mode: "cors" })
       .then((res) => res.json())
       .then((result) => {
         setOpenGames(result);

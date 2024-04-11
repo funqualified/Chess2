@@ -141,7 +141,7 @@ const Game = (props) => {
     if (!piece) return;
     var index = piece.getIndex(Chess().board);
     // get list of possible moves for this square
-    var moves = Chess().moves(index, true);
+    var moves = Chess().moves.filter((move) => move.from === index);
 
     var squaresToHighlight = [];
     squaresToHighlight.push(index);

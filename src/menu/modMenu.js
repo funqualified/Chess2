@@ -25,20 +25,22 @@ const ModMenu = (props) => {
   function spiciness() {
     let spice = 0;
     selectedMods.forEach((mod) => {
-      var spiceToAdd = Mods.find((m) => m.uid === mod).spice;
+      var spiceToAdd = mod.spice;
       spice += spiceToAdd;
     });
     return spice;
   }
 
   function handleCheckboxChange(event) {
-    let newArray = [...selectedMods, event.target.value];
-    if (selectedMods.includes(event.target.value)) {
-      newArray = newArray.filter((mod) => mod !== event.target.value);
+    let newArray = [...selectedMods, Mods.find((m) => m.uid === event.target.value)];
+    if (selectedMods.includes(Mods.find((m) => m.uid === event.target.value))) {
+      newArray = newArray.filter((mod) => mod.uid !== event.target.value);
       playDeselect();
     } else {
       playSelect();
     }
+
+    console.log(newArray);
     setSelectedMods(newArray);
     props.handleModsChanged(newArray);
   }
