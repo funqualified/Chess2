@@ -113,8 +113,8 @@ const Title = () => {
     return list;
   }
 
-  const [classList, setClassList] = useState(getClassList());
-  const [gameTitle, setGameTitle] = useState(getGameTitle());
+  const [classList] = useState(getClassList());
+  const [gameTitle] = useState(getGameTitle());
 
   return <h1 className={classList} id="game-title" dangerouslySetInnerHTML={{ __html: gameTitle }}></h1>;
 };

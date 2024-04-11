@@ -1,7 +1,6 @@
 import Chess from "./chess2";
 import GridPosition from "../models/gridPosition";
-import { useState, useEffect } from "react";
-import { func } from "prop-types";
+import { useState } from "react";
 
 const Chessboard = (props) => {
   const imageMap = {
@@ -78,19 +77,19 @@ const Chessboard = (props) => {
     }
   }
 
-  var board = props.orientation == "black" ? Chess().board.slice(0).reverse() : Chess().board;
+  var board = props.orientation === "black" ? Chess().board.slice(0).reverse() : Chess().board;
 
   return (
     <div id="board" className="black">
       {board.map((row, rowIndex) => {
-        var displayRow = props.orientation == "black" ? row.slice(0).reverse() : row;
-        if (props.orientation == "black") {
+        var displayRow = props.orientation === "black" ? row.slice(0).reverse() : row;
+        if (props.orientation === "black") {
           rowIndex = board.length - 1 - rowIndex;
         }
         return (
           <div className="row" key={rowIndex}>
             {displayRow.map((square, squareIndex) => {
-              if (props.orientation == "black") {
+              if (props.orientation === "black") {
                 squareIndex = displayRow.length - 1 - squareIndex;
               }
               return (

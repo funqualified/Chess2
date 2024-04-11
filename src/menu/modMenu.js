@@ -10,18 +10,6 @@ const ModMenu = (props) => {
   const [playDeselect] = useSound(deselectSfx, { volume: 0.25 });
   const [selectedMods, setSelectedMods] = useState([]);
 
-  function convertToCapitalCase(str) {
-    // Replace underscores with spaces
-    str = str.replace(/_/g, " ");
-
-    // Convert to capital case
-    str = str.toLowerCase().replace(/(?:^|\s)\w/g, function (match) {
-      return match.toUpperCase();
-    });
-
-    return str;
-  }
-
   function spiciness() {
     let spice = 0;
     selectedMods.forEach((mod) => {

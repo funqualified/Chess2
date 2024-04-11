@@ -1,6 +1,6 @@
 import Chessboard from "./chessboard";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import React from "react";
 import Chess from "./chess2";
 import Multiplayer from "./multiplayer";
@@ -9,7 +9,7 @@ import ConnectionIndicator from "./connectionIndicator";
 import VersionFooter from "../versionFooter";
 
 import { useSound } from "use-sound";
-import clickSfx from "../assets/Audio/PressButton.wav";
+//import clickSfx from "../assets/Audio/PressButton.wav";
 import matchMusic from "../assets/Audio/MatchMusic.mp3";
 import snapbackSfx from "../assets/Audio/SnapbackPiece.mp3";
 import pickupPieceSfx from "../assets/Audio/PickupPiece.mp3";
@@ -20,7 +20,7 @@ import turnAlertSfx from "../assets/Audio/TurnAlert.mp3";
 
 const Game = (props) => {
   const navigate = useNavigate();
-  const [playClick] = useSound(clickSfx, { volume: 0.25 });
+  //const [playClick] = useSound(clickSfx, { volume: 0.25 });
   const [playSnapback] = useSound(snapbackSfx, { volume: 0.25 });
   const [playPickupPiece] = useSound(pickupPieceSfx, { volume: 0.25 });
   const [playPlacePiece] = useSound(placePieceSfx, { volume: 0.25 });
@@ -28,7 +28,18 @@ const Game = (props) => {
   const [playCapturePiece] = useSound(capturePieceSfx, { volume: 0.25 });
   const [playTurnAlert] = useSound(turnAlertSfx, { volume: 0.25 });
 
-  const [playMatchMusic, musicObj] = useSound(matchMusic, { volume: 0.02, loop: true, autoplay: true });
+  const [, musicObj] = useSound(matchMusic, { volume: 0.02, loop: true, autoplay: true });
+
+  const updateUI = useCallback(() => {
+    setFogHighlights(Chess().fog());
+    setGameInfo(Chess().getGameInfo());
+    var currentTurn = Chess().turn;
+    var playerColor = Chess().playerColor.charAt(0);
+    if (currentTurn === playerColor) {
+      playTurnAlert();
+      console.log("Your turn");
+    }
+  }, [playTurnAlert]);
 
   useEffect(() => {
     if (!Chess().initialized) {
@@ -40,11 +51,10 @@ const Game = (props) => {
     if (props.multiplayer) {
       Multiplayer().updateUI = updateUI;
     }
-  }, [navigate, props.multiplayer]);
+  }, [navigate, props.multiplayer, updateUI]);
 
   const [gameInfo, setGameInfo] = useState("");
   const [pieceInfo, setPieceInfo] = useState("");
-  const [selectedSquare, setSelectedSquare] = useState("");
   const [moveHighlights, setMoveHighlights] = useState([]);
   const [fogHighlights, setFogHighlights] = useState([]);
 
@@ -139,7 +149,7 @@ const Game = (props) => {
   function greySquareMoves(sqaure) {
     var piece = Chess().board[sqaure.row][sqaure.col];
     if (!piece) return;
-    var index = piece.getIndex(Chess().board);
+    let index = piece.getIndex(Chess().board);
     // get list of possible moves for this square
     var moves = Chess().moves(index, true);
 
@@ -148,7 +158,7 @@ const Game = (props) => {
 
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {
-      var index = moves[i].to;
+      let index = moves[i].to;
       squaresToHighlight.push(index);
     }
 
@@ -157,17 +167,6 @@ const Game = (props) => {
 
   function removeHightlighSquares() {
     setMoveHighlights([]);
-  }
-
-  function updateUI() {
-    setFogHighlights(Chess().fog());
-    setGameInfo(Chess().getGameInfo());
-    var currentTurn = Chess().turn;
-    var playerColor = Chess().playerColor.charAt(0);
-    if (currentTurn === playerColor) {
-      playTurnAlert();
-      console.log("Your turn");
-    }
   }
 
   function quit() {

@@ -1,6 +1,5 @@
 import gameplayUIManager from "./gameplayUI";
 import GridPosition from "../models/gridPosition";
-import { Mods } from "../managers/mods";
 import getName from "../mods/PieceNames";
 
 function pieceFactory(fenId, index) {
@@ -72,12 +71,13 @@ class Piece {
     var index = this.getIndex(game.board);
     if (this.canPromote && ((this.color === "white" && index.row === 0) || (this.color === "black" && index.row === 7))) {
       if (game.mods.includes("QTE_PROMOTION")) {
+        var value;
         if (this.color !== game.playerColor) {
-          var value = Math.random() * 51;
+          value = Math.random() * 51;
         } else {
-          var value = defaultAction ? "q" : await gameplayUIManager().QTUI();
+          value = defaultAction ? "q" : await gameplayUIManager().QTUI();
         }
-        var fen = null;
+        let fen = null;
         if (value < 10) {
           fen = "q";
         } else if (value < 20) {
@@ -96,7 +96,7 @@ class Piece {
         if (this.color !== game.playerColor) {
           game.board[index.row][index.col] = pieceFactory(this.color === "white" ? "q".toUpperCase() : "q".toLowerCase());
         } else {
-          var fen = defaultAction
+          let fen = defaultAction
             ? "q"
             : await gameplayUIManager().choiceUI([
                 { label: "Queen", response: "q" },
@@ -117,7 +117,7 @@ class Piece {
       this.moveTypes.includes("pawn") &&
       move.from.equals(this.startingIndex) &&
       Math.abs(move.to.row - this.startingIndex.row) === 2 &&
-      move.from.col == move.to.col
+      move.from.col === move.to.col
     ) {
       game.enPassant = new GridPosition(Math.min(move.from.row, move.to.row) + 1, move.from.col);
       game.justDoubleMovedPawn = true;
@@ -169,7 +169,7 @@ class Piece {
       }
     }
 
-    if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col == this.startingIndex.col) {
+    if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col === this.startingIndex.col) {
       //get king index
       var kingIndex = null;
       for (let i = 0; i < game.board.length; i++) {
@@ -612,7 +612,6 @@ class Chess {
 
     for (let i = 0; i < rows.length; i++) {
       const row = [];
-      let col = 0;
 
       for (let j = 0; j < rows[i].length; j++) {
         const char = rows[i][j];
@@ -714,8 +713,8 @@ class Chess {
   }
 
   getGameWinner() {
+    var hasValidMove = false;
     if (this.mods.includes("ELIMINATION")) {
-      var hasValidMove = false;
       var whiteHasPieces = false;
       var blackHasPieces = false;
       for (let i = 0; i < this.board.length; i++) {
@@ -748,18 +747,20 @@ class Chess {
     }
 
     var winner = null;
-    var hasValidMove = false;
+    hasValidMove = false;
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board[i].length; j++) {
         const piece = this.board[i][j];
         if (piece !== null && piece.color.charAt(0) === this.turn) {
-          this.moves(new GridPosition(i, j)).forEach((move) => {
+          const moves = this.moves(new GridPosition(i, j));
+          for (let k = 0; k < moves.length; k++) {
+            var move = moves[k];
             var target = this.board[move.to.row][move.to.col];
             hasValidMove = true;
             if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
               winner = piece.color;
             }
-          });
+          }
         }
       }
     }
@@ -1107,7 +1108,7 @@ class Chess {
 
       for (let i = 0; i < this.board.length; i++) {
         for (let j = 0; j < this.board[i].length; j++) {
-          if (!new GridPosition(i, j).isIn(sight) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
+          if (!new GridPosition(i, j).isIn(sight) && !(this.board[i][j] != null && this.board[i][j].color === this.playerColor)) {
             fogArr.push(new GridPosition(i, j));
           }
         }
