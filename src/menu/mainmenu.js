@@ -1,7 +1,7 @@
 import Title from "./title";
 import ModMenu from "./modMenu";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Chess from "../game/chess2";
 import Multiplayer from "../game/multiplayer";
 import VersionFooter from "../versionFooter";
@@ -28,9 +28,17 @@ const MainMenu = (props) => {
   const [, musicObj] = useSound(menuMusic, { volume: 0.02, loop: true, autoplay: true });
   const navigate = useNavigate();
 
+  const refreshGames = useCallback(() => {
+    fetch(`${APIURL}?action=getOpenGames`, { mode: "cors" })
+      .then((res) => res.json())
+      .then((result) => {
+        setOpenGames(result);
+      });
+  }, [APIURL]);
+
   useEffect(() => {
     refreshGames();
-  }, []);
+  }, [refreshGames]);
 
   function beginSingleplayer() {
     props.setMultiplayer(false);
@@ -60,14 +68,6 @@ const MainMenu = (props) => {
       Multiplayer().startGame = handleGameJoined;
       Multiplayer().joinGame(peerId);
     }
-  }
-
-  function refreshGames() {
-    fetch(`${APIURL}?action=getOpenGames`, { mode: "cors" })
-      .then((res) => res.json())
-      .then((result) => {
-        setOpenGames(result);
-      });
   }
 
   function handleModsChanged(mods) {
