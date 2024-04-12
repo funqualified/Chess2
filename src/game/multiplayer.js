@@ -19,7 +19,7 @@ class Multiplayer {
     getMultiplayer().peer = new Peer();
     getMultiplayer().isPrivate = isPrivate;
     getMultiplayer().peer.on("open", function (id) {
-      fetch(`${APIURL}?action=newGame`, {
+      fetch(`${APIURL}chess?action=newGame`, {
         mode: "cors",
         method: "POST",
         body: JSON.stringify({ peerid: id, username: username, mods: mods, isPrivate: isPrivate }),
@@ -88,12 +88,12 @@ class Multiplayer {
   }
 
   async getPeerIdfromGameId(gameId) {
-    const id = await fetch(`${APIURL}?action=getGame&gameId=${gameId}`, { mode: "cors", method: "GET" }).then((res) => res.json());
+    const id = await fetch(`${APIURL}chess?action=getGame&gameId=${gameId}`, { mode: "cors", method: "GET" }).then((res) => res.json());
     return id;
   }
   closeListing = () => {
     clearInterval(getMultiplayer().refresh);
-    fetch(`${APIURL}?action=deleteGame&id=${getMultiplayer().gameid}`, {
+    fetch(`${APIURL}chess?action=deleteGame&id=${getMultiplayer().gameid}`, {
       mode: "cors",
       method: "DELETE",
     });
@@ -101,7 +101,7 @@ class Multiplayer {
 
   keepListingAlive = () => {
     console.log(getMultiplayer());
-    fetch(`${APIURL}?action=keepGameAlive&id=${getMultiplayer().gameid}`, {
+    fetch(`${APIURL}chess?action=keepGameAlive&id=${getMultiplayer().gameid}`, {
       mode: "cors",
       method: "POST",
     });

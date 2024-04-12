@@ -29,7 +29,7 @@ const MainMenu = (props) => {
   const navigate = useNavigate();
 
   const refreshGames = useCallback(() => {
-    fetch(`${APIURL}?action=getOpenGames`, { mode: "cors" })
+    fetch(`${APIURL}chess?action=getOpenGames`, { mode: "cors" })
       .then((res) => res.json())
       .then((result) => {
         setOpenGames(result);
