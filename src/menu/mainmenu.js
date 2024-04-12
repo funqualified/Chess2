@@ -15,6 +15,7 @@ import Modal from "@mui/joy/Modal";
 import ModalClose from "@mui/joy/ModalClose";
 
 const MainMenu = (props) => {
+  const APIURL = process.env.REACT_APP_API_URL;
   const [activeMods, setActiveMods] = useState([]);
   const [openGames, setOpenGames] = useState([]);
   const [username, setUsername] = useState("");
@@ -62,7 +63,7 @@ const MainMenu = (props) => {
   }
 
   function refreshGames() {
-    fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/games", { mode: "cors" })
+    fetch(`${APIURL}?action=getOpenGames`, { mode: "cors" })
       .then((res) => res.json())
       .then((result) => {
         setOpenGames(result);

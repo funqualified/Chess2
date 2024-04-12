@@ -1,6 +1,7 @@
 import Peer from "peerjs";
 import GridPosition from "../models/gridPosition";
 import Chess, { Piece } from "./chess2";
+const APIURL = process.env.REACT_APP_API_URL;
 
 class Multiplayer {
   constructor() {
@@ -18,7 +19,7 @@ class Multiplayer {
     getMultiplayer().peer = new Peer();
     getMultiplayer().isPrivate = isPrivate;
     getMultiplayer().peer.on("open", function (id) {
-      fetch("https://chess2-backend-f7a44cf758b2.herokuapp.com/newGame", {
+      fetch(`${APIURL}?action=newGame`, {
         mode: "cors",
         method: "POST",
         body: JSON.stringify({ peerid: id, username: username, mods: mods, isPrivate: isPrivate }),
@@ -87,12 +88,12 @@ class Multiplayer {
   }
 
   async getPeerIdfromGameId(gameId) {
-    const id = await fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/games/${gameId}`, { mode: "cors", method: "GET" }).then((res) => res.json());
+    const id = await fetch(`${APIURL}?action=getGame&gameId=${gameId}`, { mode: "cors", method: "GET" }).then((res) => res.json());
     return id;
   }
   closeListing = () => {
     clearInterval(getMultiplayer().refresh);
-    fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/closeGame/${getMultiplayer().gameid}`, {
+    fetch(`${APIURL}?action=deleteGame&id=${getMultiplayer().gameid}`, {
       mode: "cors",
       method: "DELETE",
     });
@@ -100,7 +101,7 @@ class Multiplayer {
 
   keepListingAlive = () => {
     console.log(getMultiplayer());
-    fetch(`https://chess2-backend-f7a44cf758b2.herokuapp.com/keepGameAlive/${getMultiplayer().gameid}`, {
+    fetch(`${APIURL}?action=keepGameAlive&id=${getMultiplayer().gameid}`, {
       mode: "cors",
       method: "POST",
     });
