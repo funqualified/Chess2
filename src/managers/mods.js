@@ -10,6 +10,23 @@ const Mods = [
     tags: ["Information", "Rule Addition"],
     spice: 4,
     uid: "FOG",
+    events: {
+      Fog: (game, data) => {
+        let sight = game.getPlayerSight(game.playerColor);
+
+        let fogArr = [];
+
+        for (let i = 0; i < game.board.length; i++) {
+          for (let j = 0; j < game.board[i].length; j++) {
+            if (!new GridPosition(i, j).isIn(sight) && !(game.board[i][j] != null && game.board[i][j].color == game.playerColor)) {
+              fogArr.push(new GridPosition(i, j));
+            }
+          }
+        }
+        data.fogArr = fogArr;
+        return "Continue";
+      },
+    },
   },
   {
     name: "Vampire",
@@ -68,6 +85,14 @@ const Mods = [
           return "NoMods";
         }
         return "Continue";
+      },
+      EnPassantCapture: (game, data) => {
+        if (data.targetPiece?.hasShield) {
+          data.targetPiece.hasShield = false;
+          data.returnVal.hitShield = true;
+          data.returnVal.didCapturePiece = false;
+          return "NoDefault";
+        }
       },
     },
   },
@@ -238,6 +263,9 @@ const Mods = [
         }
         return "Continue";
       },
+      DoesMoveLeaveInCheck(game, data) {
+        return "NoDefault";
+      },
     },
   },
   {
@@ -281,6 +309,12 @@ const Mods = [
     tags: ["en passant", "Rule Removal"],
     spice: 1,
     uid: "NO_EN_PASSANT",
+    events: {
+      PawnDoubleMoved: (game, data) => {
+        game.enPassant = new GridPosition(-1, -1);
+        return "Continue";
+      },
+    },
   },
   {
     name: "No Castling",

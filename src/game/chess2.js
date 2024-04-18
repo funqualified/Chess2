@@ -128,7 +128,6 @@ class Piece {
   move(game, move) {
     //can be en passant
     if (
-      !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
       move.from.equals(this.startingIndex) &&
       Math.abs(move.to.row - this.startingIndex.row) === 2 &&
@@ -136,20 +135,19 @@ class Piece {
     ) {
       game.enPassant = new GridPosition(Math.min(move.from.row, move.to.row) + 1, move.from.col);
       game.justDoubleMovedPawn = true;
+      gameEvent("PawnDoubleMoved", game, { piece: this, move: move });
     }
 
     //did an en passant
     if (
-      !game.mods.includes("NO_EN_PASSANT") &&
       this.moveTypes.includes("pawn") &&
       move.to.equals(game.enPassant) &&
       Math.abs(move.from.row - move.to.row) === 1 &&
       Math.abs(move.from.col - move.to.col) === 1
     ) {
       var targetPiece = game.board[move.from.row][move.to.col];
-      if (game.mods.includes("SHIELDS") && targetPiece && targetPiece.hasShield) {
-        targetPiece.hasShield = false;
-      } else {
+      var defaultAction = gameEvent("EnPassantCapture", game, { piece: this, move: move, targetPiece: targetPiece });
+      if (defaultAction) {
         game.board[move.from.row][move.to.col] = null;
         game.board[move.to.row][move.to.col] = this;
       }
@@ -518,7 +516,6 @@ class Piece {
       // King moves 1 space in any direction
       return true;
     } else if (
-      !game.mods.includes("NO_CASTLING") &&
       targetPiece &&
       targetPiece.fenId &&
       targetPiece.fenId.toUpperCase() === "R" &&
@@ -982,9 +979,13 @@ class Chess {
       return false;
     }
 
+    var defaultAction = gameEvent("DoesMoveLeaveInCheck", this, { source: source, target: target, piece: piece, targetPiece: targetPiece });
+    if (!defaultAction) {
+      return true;
+    }
+
     //Ensure move doesn't put or keep the player in check
-    if (!this.isCopy && !this.mods.includes("ELIMINATION")) {
-      //TODO: Handle elminination mod through game events
+    if (!this.isCopy) {
       const simulatedGame = this.simulateMove(from, to);
       if (simulatedGame.isInCheck(piece.color)) {
         return false;
@@ -1028,22 +1029,11 @@ class Chess {
   }
 
   fog() {
-    if (this.mods.includes("FOG")) {
-      let sight = this.getPlayerSight(this.playerColor);
+    var returnVal = { fogArr: [] };
 
-      let fogArr = [];
+    gameEvent("Fog", this, { returnVal: returnVal });
 
-      for (let i = 0; i < this.board.length; i++) {
-        for (let j = 0; j < this.board[i].length; j++) {
-          if (!new GridPosition(i, j).isIn(sight) && !(this.board[i][j] != null && this.board[i][j].color == this.playerColor)) {
-            fogArr.push(new GridPosition(i, j));
-          }
-        }
-      }
-      return fogArr;
-    }
-
-    return [];
+    return returnVal.fogArr;
   }
 
   async move(move) {
