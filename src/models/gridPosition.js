@@ -20,6 +20,14 @@ class GridPosition {
       return this.equals(element);
     });
   }
+
+  getRow() {
+    return this.row;
+  }
+
+  getCol() {
+    return this.col;
+  }
 }
 
 export default GridPosition;

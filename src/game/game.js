@@ -1,4 +1,4 @@
-import Chessboard from "./chessboard";
+import ChessboardComponent from "./chessboardComponent";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import React from "react";
@@ -136,15 +136,17 @@ const Game = (props) => {
     setPieceInfo("");
   }
 
-  function greySquareMoves(sqaure) {
-    var piece = Chess().board[sqaure.row][sqaure.col];
+  function greySquareMoves(square) {
+    var piece = Chess().board.spaces.find((space) => {
+      return space.position.getRow() === square.row && space.position.getCol() === square.col;
+    }); //TODO: this should not be using cooordiantes, hacked in for now
     if (!piece) return;
-    var index = piece.getIndex(Chess().board);
+
     // get list of possible moves for this square
-    var moves = Chess().moves.filter((move) => move.from === index);
+    var moves = Chess().moves.filter((move) => move.from === square);
 
     var squaresToHighlight = [];
-    squaresToHighlight.push(index);
+    squaresToHighlight.push(square);
 
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {
@@ -189,7 +191,7 @@ const Game = (props) => {
     <div id="game-space" className="game">
       {props.multiplayer ? <ConnectionIndicator /> : ""}
       <div className="board">
-        <Chessboard
+        <ChessboardComponent
           onMouseOverSquare={selectSquare}
           onMouseoutSquare={onMouseoutSquare}
           onDragStart={onDragStart}

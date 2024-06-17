@@ -1,6 +1,7 @@
 import Peer from "peerjs";
 import GridPosition from "../models/gridPosition";
-import Chess, { Piece, clonePiece } from "./chess2";
+import Chess from "./chess2";
+import { Piece, clonePiece } from "./piece";
 
 class Multiplayer {
   constructor() {

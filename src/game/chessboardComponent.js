@@ -3,7 +3,7 @@ import GridPosition from "../models/gridPosition";
 import { useState, useEffect } from "react";
 import { func } from "prop-types";
 
-const Chessboard = (props) => {
+const ChessboardComponent = (props) => {
   const imageMap = {
     wP: require("../assets/Pieces/wP.svg").default,
     wR: require("../assets/Pieces/wR.svg").default,
@@ -78,54 +78,80 @@ const Chessboard = (props) => {
     }
   }
 
-  var board = props.orientation == "black" ? Chess().board.slice(0).reverse() : Chess().board;
+  var board = processBoard(Chess().board, props.orientation);
+
+  function processBoard(board, orientation) {
+    // Sort the board spaces using row and col based on the orientation
+    var sortedBoard = board.spaces.sort((a, b) => {
+      if (orientation == "black") {
+        return a.position.getRow() - b.position.getRow() || a.position.getCol() - b.position.getCol(); // TODO: double check this
+      } else {
+        return b.position.getRow() - a.position.getRow() || b.position.getCol() - a.position.getCol();
+      }
+    });
+    // Then split the board into rows
+    var processedBoard = [];
+    var row = [];
+    var rowIndex = 0;
+    for (var i = 0; i < sortedBoard.length; i++) {
+      var space = sortedBoard[i];
+      if (space.position.getRow() != rowIndex) {
+        processedBoard.push(row);
+        row = [];
+        rowIndex = space.position.getRow();
+      }
+      row.push(space);
+    }
+    processedBoard.push(row);
+
+    // return the processed board
+    return processedBoard;
+  }
 
   return (
     <div id="board" className="black">
-      {board.map((row, rowIndex) => {
-        var displayRow = props.orientation == "black" ? row.slice(0).reverse() : row;
-        if (props.orientation == "black") {
-          rowIndex = board.length - 1 - rowIndex;
-        }
-        return (
-          <div className="row" key={rowIndex}>
-            {displayRow.map((square, squareIndex) => {
-              if (props.orientation == "black") {
-                squareIndex = displayRow.length - 1 - squareIndex;
-              }
-              return (
-                <div
-                  className={squareClasses(rowIndex, squareIndex)}
-                  key={squareIndex}
-                  onMouseOver={() => onMouseOverSquare(rowIndex, squareIndex)}
-                  onMouseOut={() => props.onMouseoutSquare(square)}
-                  onDrop={(e) => onDragEnd(e, heldPiece, rowIndex, squareIndex)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onTouchStart={(e) => onTouchStart(e, rowIndex, squareIndex, square)}>
-                  {square && !isFog(rowIndex, squareIndex) ? (
-                    <img
-                      className="piece"
-                      src={imageMap[`${square.color[0]}${square.fenId.toUpperCase()}`]}
-                      alt={`${square.color[0]}${square.fenId.toUpperCase()}.svg`}
-                      onDragStart={(e) => onDragStart(e, square)}
-                    />
-                  ) : (
-                    ""
-                  )}
-                  {square && !isFog(rowIndex, squareIndex) ? <PieceStateIndicator piece={square} /> : ""}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+      {/* Sort the board spaces using row and col based on the orientation
+      Then map over the rows and columns to create the board
+      go to next row when the column is done */}
+      {board &&
+        board.map((row, rowIndex) => {
+          var displayRow = row;
+          return (
+            <div className="row" key={rowIndex}>
+              {displayRow.map((square, squareIndex) => {
+                return (
+                  <div
+                    className={squareClasses(square.position.getRow(), square.position.getCol())}
+                    key={square.position.getCol()}
+                    onMouseOver={() => onMouseOverSquare(square.position.getRow(), square.position.getCol())}
+                    onMouseOut={() => props.onMouseoutSquare(square)}
+                    onDrop={(e) => onDragEnd(e, heldPiece, square.position.getRow(), square.position.getCol())}
+                    onDragOver={(e) => e.preventDefault()}
+                    onTouchStart={(e) => onTouchStart(e, square.position.getRow(), square.position.getCol(), square)}>
+                    {square.getPiece() && !isFog(square.position.getRow(), square.position.getCol()) ? (
+                      <img
+                        className="piece"
+                        src={imageMap[`${square.color[0]}${square.getPiece().fenId.toUpperCase()}`]}
+                        alt={`${square.getPiece().color[0]}${square.getPiece().fenId.toUpperCase()}.svg`}
+                        onDragStart={(e) => onDragStart(e, square.getPiece())}
+                      />
+                    ) : (
+                      ""
+                    )}
+                    {square && !isFog(square.position.getRow(), square.position.getCol()) ? <PieceStateIndicator piece={square} /> : ""}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
     </div>
   );
 };
 
 const PieceStateIndicator = (props) => {
   return (
-    <div class="piece-state-indicator">
+    <div className="piece-state-indicator">
       {Chess().mods.includes("SHIELDS") && props.piece.hasShield && <div className="state-icon">S</div>}
       {Chess().mods.includes("VAMPIRE") && props.piece.isVampire && <div className="state-icon">V</div>}
       {Chess().mods.includes("LOYALTY") && (
@@ -137,4 +163,4 @@ const PieceStateIndicator = (props) => {
   );
 };
 
-export default Chessboard;
+export default ChessboardComponent;

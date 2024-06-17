@@ -102,6 +102,24 @@ const Mods = [
     tags: ["Movement", "Rule Addition"],
     spice: 4,
     uid: "WRAP",
+    events: {
+      setSpaceNeighbors: (game, data) => {
+        for (let i = 0; i < data.spaces.length; i++) {
+          const space = data.spaces[i];
+          const position = space.getPosition();
+          const row = position.getRow();
+          const col = position.getCol();
+          const neighbors = space.getNeighbors();
+          if (col === 0) {
+            neighbors.push({ space: game.board[row][data.width - 1], types: ["horizontal", "left"] });
+          }
+          if (col === data.width - 1) {
+            neighbors.push({ space: game.board[row][0], types: ["horizontal", "right"] });
+          }
+        }
+        return "Continue";
+      },
+    },
   },
   {
     name: "Loyalty",
