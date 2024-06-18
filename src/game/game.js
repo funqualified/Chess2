@@ -168,7 +168,6 @@ const Game = (props) => {
     var playerColor = Chess().playerColor.charAt(0);
     if (currentTurn === playerColor) {
       playTurnAlert();
-      console.log("Your turn");
     }
   }
 

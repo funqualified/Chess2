@@ -40,7 +40,6 @@ const ModMenu = (props) => {
       playSelect();
     }
 
-    console.log(newArray);
     setSelectedMods(newArray);
     props.handleModsChanged(newArray);
   }

@@ -10,6 +10,7 @@ class Piece {
     this.name = name;
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
+    this.legalMoves = [];
   }
 
   getIndex(board) {
@@ -52,10 +53,21 @@ class Piece {
         }
       }
     }
+
+    this.cacheLegalMoves(game);
   }
 
-  getMoves(game) {
-    //TODO: get the legal moves for the piece
+  getMoves() {
+    return this.legalMoves;
+  }
+
+  cacheLegalMoves(game) {
+    this.legalMoves = [];
+    for (let i = 0; i < game.board.spaces.length; i++) {
+      if (game.board.spaces[i].getPiece() !== this && this.isLegalMove(game.board.spaces[i].position, game.board.spaces[i].position, null, game)) {
+        this.legalMoves.push(game.board.spaces[i].position);
+      }
+    }
   }
 
   move(game, move) {

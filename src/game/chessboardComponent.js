@@ -131,7 +131,7 @@ const ChessboardComponent = (props) => {
                     {square.getPiece() && !isFog(square.position.getRow(), square.position.getCol()) ? (
                       <img
                         className="piece"
-                        src={imageMap[`${square.color[0]}${square.getPiece().fenId.toUpperCase()}`]}
+                        src={imageMap[`${square.getPiece().color[0]}${square.getPiece().fenId.toUpperCase()}`]}
                         alt={`${square.getPiece().color[0]}${square.getPiece().fenId.toUpperCase()}.svg`}
                         onDragStart={(e) => onDragStart(e, square.getPiece())}
                       />

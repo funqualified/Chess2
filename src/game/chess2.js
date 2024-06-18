@@ -92,8 +92,6 @@ class Chess {
       fen: "",
     };
     const defaultAction = gameEvent("BoardSetup", this, data);
-    console.log(defaultAction);
-    console.log(data.fen);
     if (defaultAction) {
       data.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     }
@@ -162,11 +160,12 @@ class Chess {
       for (let j = 0; j < this.board.width; j++) {
         const piece = this.board.getSpace(i, j).getPiece();
         if (!!piece) {
-          moves.push(...piece.getMoves(this));
+          piece.cacheLegalMoves(this);
+          moves.push.apply(piece.legalMoves);
         }
       }
     }
-    console.log(moves);
+
     return moves;
   }
 
