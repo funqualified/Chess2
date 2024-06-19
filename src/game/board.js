@@ -6,9 +6,9 @@ class Board {
   constructor(fen, game) {
     this.spaces = [];
     this.game = game;
-    this.createBoard(fen.split(" ")[0]);
     this.width = fen.split("/")[0].length;
     this.height = fen.split("/").length;
+    this.createBoard(fen.split(" ")[0]);
   }
 
   createBoard(fen) {
@@ -69,7 +69,7 @@ class Board {
         if (col > 0) {
           neighbors.push({ space: this.getSpace(row - 1, col - 1), types: ["diagonal", "up", "left"] });
         }
-        neighbors.push(this.getSpace(row - 1, col));
+        neighbors.push({ space: this.getSpace(row - 1, col), types: ["vertical", "up"] });
         if (col < this.width - 1) {
           neighbors.push({ space: this.getSpace(row - 1, col + 1), types: ["diagonal", "up", "right"] });
         }
@@ -103,7 +103,9 @@ class Space {
   }
 
   addNeighbors(spaces) {
-    this.neighbors.push.apply(spaces);
+    spaces.forEach((neighbor) => {
+      this.neighbors.push(neighbor);
+    });
   }
 
   addDetail(detail) {
@@ -120,6 +122,7 @@ class Space {
 
   setPiece(piece) {
     this.piece = piece;
+    this.piece.setSpace(this);
   }
 
   getPosition() {
@@ -128,6 +131,12 @@ class Space {
 
   getNeighbors() {
     return this.neighbors;
+  }
+
+  getNeighborOfTypes(types) {
+    return this.neighbors.find((neighbor) => {
+      return neighbor.types.some((type) => types.includes(type));
+    }).space;
   }
 }
 

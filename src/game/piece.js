@@ -11,6 +11,11 @@ class Piece {
     this.canPromote = canPromote;
     this.startingIndex = startingIndex;
     this.legalMoves = [];
+    this.currentSpace = null;
+  }
+
+  setSpace(space) {
+    this.currentSpace = space;
   }
 
   getIndex(board) {
@@ -63,11 +68,35 @@ class Piece {
 
   cacheLegalMoves(game) {
     this.legalMoves = [];
-    for (let i = 0; i < game.board.spaces.length; i++) {
-      if (game.board.spaces[i].getPiece() !== this && this.isLegalMove(game.board.spaces[i].position, game.board.spaces[i].position, null, game)) {
-        this.legalMoves.push(game.board.spaces[i].position);
+    this.moveTypes.forEach((element) => {
+      switch (element) {
+        case "pawn":
+          this.legalMoves.push.apply(this.getPawnMoves(game));
+          break;
+        case "knight":
+          this.legalMoves.push.apply(this.getKnightMoves(game));
+          break;
+        case "horizontal":
+          this.legalMoves.push.apply(this.getHorizontalMoves(game));
+          break;
+        case "vertical":
+          this.legalMoves.push.apply(this.getVerticalMoves(game));
+          break;
+        case "diagonal":
+          this.legalMoves.push.apply(this.getDiagonalMoves(game));
+          break;
+        case "king":
+          this.legalMoves.push.apply(this.getKingMoves(game));
+          break;
+        case "rook":
+          this.legalMoves.push.apply(this.getHorizontalMoves(game));
+          this.legalMoves.push.apply(this.getVerticalMoves(game));
+          break;
+        default:
+          console.log("Unknown move type");
+          break;
       }
-    }
+    });
   }
 
   move(game, move) {
@@ -169,338 +198,62 @@ class Piece {
   fen() {
     return this.color === "white" ? this.fenId.toUpperCase() : this.fenId.toLowerCase();
   }
-  isLegalMove(source, target, targetPiece, game) {
-    let isMoveLegal = false;
-    this.moveTypes.forEach((element) => {
-      switch (element) {
-        case "pawn":
-          if (this.pawnMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "knight":
-          if (this.knightMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "horizontal":
-          if (this.horizontalMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "vertical":
-          if (this.verticalMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "diagonal":
-          if (this.diagonalMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "king":
-          if (this.kingMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        case "rook":
-          if (this.horizontalMove(source, target, targetPiece, game) || this.verticalMove(source, target, targetPiece, game)) {
-            isMoveLegal = true;
-          }
-          break;
-        default:
-          console.log("Unknown move type");
-          break;
+
+  getPawnMoves(game) {
+    var moves = [];
+    // Pawn moves forward 1 space if that space is empty
+    var targetSpace = this.currentSpace.getNeighborOfTypes([this.color === "white" ? "up" : "down", "vertical"]);
+    if (targetSpace && targetSpace.piece === null) {
+      moves.push(targetSpace);
+    }
+
+    // Pawn moves forward 2 spaces if it is on its starting row and the space in front of it is empty
+    if (this.currentSpace.position.equals(this.startingIndex)) {
+      targetSpace = this.currentSpace.getNeighborOfTypes([this.color === "white" ? "up" : "down", "vertical"]);
+      if (targetSpace && targetSpace.piece === null) {
+        targetSpace = targetSpace.getNeighborOfTypes([this.color === "white" ? "up" : "down", "vertical"]);
+        if (targetSpace && targetSpace.piece === null) {
+          moves.push(targetSpace);
+        }
       }
-    });
-    return isMoveLegal;
+    }
+
+    // Pawn captures diagonally
+    targetSpace = this.currentSpace.getNeighborOfTypes([this.color === "white" ? "up" : "down", "left", "diagonal"]);
+    if (targetSpace && targetSpace.piece && targetSpace.piece.color !== this.color) {
+      moves.push(targetSpace);
+    }
+
+    targetSpace = this.currentSpace.getNeighborOfTypes([this.color === "white" ? "up" : "down", "right", "diagonal"]);
+    if (targetSpace && targetSpace.piece && targetSpace.piece.color !== this.color) {
+      moves.push(targetSpace);
+    }
+
+    // Pawn en passant
+    //TODO: implement en passant
+
+    console.log(moves);
+    return moves;
   }
 
-  pawnMove(source, target, targetPiece, game) {
-    if (!!targetPiece && this.color === targetPiece.color) {
-      return false;
-    }
-
-    if (this.color === "white") {
-      if (source.col === target.col) {
-        if (source.row - target.row === 2 && source.row === 6 && !targetPiece && !game.board[source.row - 1][source.col]) {
-          // Pawn moves 2 spaces on its first move
-          return true;
-        } else if (source.row - target.row === 1 && !targetPiece) {
-          // Pawn moves forward 1 space
-          return true;
-        }
-      } else if (Math.abs(source.col - target.col) === 1 && source.row - target.row === 1 && (!!targetPiece || game.enPassant.equals(target))) {
-        // Pawn captures diagonally
-        return true;
-      } else if (
-        game.mods.includes("WRAP") &&
-        source.row - target.row === 1 &&
-        (!!targetPiece || game.enPassant.equals(target)) &&
-        ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
-      ) {
-        //Pawn captures diagonally over wrap
-        return true;
-      }
-    } else {
-      if (source.col === target.col) {
-        if (source.row - target.row === -2 && source.row === 1 && !targetPiece && !game.board[source.row + 1][source.col]) {
-          // Pawn moves 2 spaces on its first move
-          return true;
-        } else if (source.row - target.row === -1 && !targetPiece) {
-          // Pawn moves forward 1 space
-          return true;
-        }
-      } else if (Math.abs(source.col - target.col) === 1 && source.row - target.row === -1 && (!!targetPiece || game.enPassant.equals(target))) {
-        // Pawn captures diagonally
-        return true;
-      } else if (
-        game.mods.includes("WRAP") &&
-        source.row - target.row === -1 &&
-        (!!targetPiece || game.enPassant.equals(target)) &&
-        ((source.col === 0 && target.col === game.board[source.row].length - 1) || (source.col === game.board[source.row].length - 1 && target.col === 0))
-      ) {
-        //Pawn captures diagonally over wrap
-        return true;
-      }
-    }
-    return false;
+  getKnightMoves(game) {
+    return [];
   }
 
-  knightMove(source, target, targetPiece, game) {
-    if (!!targetPiece && this.color === targetPiece.color) {
-      return false;
-    }
-
-    if (
-      (Math.abs(source.row - target.row) === 2 && Math.abs(source.col - target.col) === 1) ||
-      (Math.abs(source.row - target.row) === 1 && Math.abs(source.col - target.col) === 2)
-    ) {
-      // Knight moves in L shape
-      return true;
-    }
-    if (
-      (game.mods.includes("WRAP") && Math.abs(source.row - target.row) === 2 && Math.abs(source.col - target.col) === game.board[source.row].length - 1) ||
-      (game.mods.includes("WRAP") && Math.abs(source.row - target.row) === 1 && Math.abs(source.col - target.col) === game.board[source.row].length - 2)
-    ) {
-      return true;
-    }
-    return false;
+  getHorizontalMoves(game) {
+    return [];
   }
 
-  horizontalMove(source, target, targetPiece, game) {
-    if (!!targetPiece && this.color === targetPiece.color) {
-      return false;
-    }
-
-    if (source.row === target.row) {
-      const minRow = Math.min(source.col, target.col);
-      const maxRow = Math.max(source.col, target.col);
-      for (let i = minRow + 1; i < maxRow; i++) {
-        if (game.board[source.row][i]) {
-          if (game.mods.includes("WRAP")) {
-            for (let o = maxRow + 1; o !== minRow; o++) {
-              if (o >= game.board[source.row].length) {
-                o = 0;
-                if (minRow === o) {
-                  return true;
-                }
-              }
-              if (game.board[source.row][o]) {
-                return false;
-              }
-            }
-          } else {
-            return false;
-          }
-        }
-      }
-      return true;
-    }
-    return false;
+  getVerticalMoves(game) {
+    return [];
   }
 
-  verticalMove(source, target, targetPiece, game) {
-    if (!!targetPiece && this.color === targetPiece.color) {
-      return false;
-    }
-
-    if (source.col === target.col) {
-      // Rook moves vertically
-      const minCol = Math.min(source.row, target.row);
-      const maxCol = Math.max(source.row, target.row);
-      for (let j = minCol + 1; j < maxCol; j++) {
-        if (game.board[j][source.col]) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
+  getDiagonalMoves(game) {
+    return [];
   }
 
-  diagonalMove(source, target, targetPiece, game) {
-    if (!!targetPiece && this.color === targetPiece.color) {
-      return false;
-    }
-
-    if (Math.abs(source.row - target.row) === Math.abs(source.col - target.col)) {
-      // Bishop moves diagonally
-      const startRow = source.col;
-      const startCol = source.row;
-      let colIncrement = 1;
-      let rowIncrement = 1;
-
-      if (source.row > target.row) {
-        colIncrement = -1; // moving from bottom-right to top-left or vice versa
-      }
-
-      if (source.col > target.col) {
-        rowIncrement = -1;
-      }
-      let canAccessNormal = true;
-      for (
-        let i = startRow + rowIncrement, j = startCol + colIncrement;
-        (rowIncrement > 0 ? i < target.col : i > target.col) && (colIncrement > 0 ? j < target.row : j > target.row);
-        i += rowIncrement, j += colIncrement
-      ) {
-        if (game.board[j][i]) {
-          canAccessNormal = false;
-        }
-      }
-      if (canAccessNormal) {
-        return true;
-      }
-    }
-    if (
-      game.mods.includes("WRAP") &&
-      (Math.abs(source.row - target.row + 8) === Math.abs(source.col - target.col) ||
-        Math.abs(source.row - target.row) === Math.abs(source.col - target.col + 8) ||
-        Math.abs(source.row - target.row - 8) === Math.abs(source.col - target.col) ||
-        Math.abs(source.row - target.row) === Math.abs(source.col - target.col - 8))
-    ) {
-      if (source.row < target.row && source.col > target.col) {
-        //UR
-        for (let x = source.row + 1, y = source.col + 1; x !== target.row && y !== target.col; x++, y++) {
-          if (x >= game.board.length || x < 0) {
-            return false;
-          }
-          if (y >= game.board[source.row].length) {
-            y = 0;
-            if (x === target.row && y === target.col) {
-              return true;
-            }
-          }
-          if (game.board[x][y]) {
-            return false;
-          }
-        }
-        return true;
-      } else if (source.row < target.row && source.col < target.col) {
-        //UL
-        for (let x = source.row + 1, y = source.col - 1; x !== target.row && y !== target.col; x++, y--) {
-          if (x >= game.board.length || x < 0) {
-            return false;
-          }
-          if (y < 0) {
-            y = game.board[source.row].length - 1;
-            if (x === target.row && y === target.col) {
-              return true;
-            }
-          }
-          if (game.board[x][y]) {
-            return false;
-          }
-        }
-        return true;
-      } else if (source.row > target.row && source.col < target.col) {
-        //DL
-        for (let x = source.row - 1, y = source.col - 1; x !== target.row && y !== target.col; x--, y--) {
-          if (x >= game.board.length || x < 0) {
-            return false;
-          }
-          if (y < 0) {
-            y = game.board[source.row].length - 1;
-            if (x === target.row && y === target.col) {
-              return true;
-            }
-          }
-          if (game.board[x][y]) {
-            return false;
-          }
-        }
-        return true;
-      } else if (source.row > target.row && source.col > target.col) {
-        //DR
-        for (let x = source.row - 1, y = source.col + 1; x !== target.row && y !== target.col; x--, y++) {
-          if (x >= game.board.length || x < 0) {
-            return false;
-          }
-          if (y >= game.board[source.row].length) {
-            y = 0;
-            if (x === target.row && y === target.col) {
-              return true;
-            }
-          }
-          if (game.board[x][y]) {
-            return false;
-          }
-        }
-        return true;
-      }
-      return false;
-    }
-    return false;
-  }
-
-  kingMove(source, target, targetPiece, game) {
-    if (Math.abs(source.row - target.row) <= 1 && Math.abs(source.col - target.col) <= 1) {
-      if (!!targetPiece && this.color === targetPiece.color) {
-        return false;
-      }
-      // King moves 1 space in any direction
-      return true;
-    } else if (
-      targetPiece &&
-      targetPiece.fenId &&
-      targetPiece.fenId.toUpperCase() === "R" &&
-      targetPiece.color === this.color &&
-      game.castling.includes(source.col < target.col ? (this.color === "white" ? "K" : "k") : this.color === "white" ? "Q" : "q")
-    ) {
-      //Check if there is an obstruction between the king and rook and the end spaces
-      const kingEndCol = source.col < target.col ? 6 : 2;
-      const rookEndCol = source.col < target.col ? 5 : 3;
-      const minCol = Math.min(source.col, target.col, kingEndCol, rookEndCol);
-      const maxCol = Math.max(source.col, target.col, kingEndCol, rookEndCol);
-      for (let j = minCol; j <= maxCol; j++) {
-        if (game.board[source.row][j] && game.board[source.row][j] !== this && game.board[source.row][j] !== targetPiece) {
-          return false;
-        }
-      }
-      // Check if there is a check between the king start and end spaces
-      const minCol2 = Math.min(source.col, kingEndCol);
-      const maxCol2 = Math.max(source.col, kingEndCol);
-      for (let j = minCol2; j <= maxCol2; j++) {
-        if (game.isCheck(this.color, [source.row, j], game.board)) {
-          return false;
-        }
-      }
-
-      // King castles
-      return true;
-    } else if (game.mods.includes("WRAP")) {
-      if (!!targetPiece && this.color === targetPiece.color) {
-        return false;
-      }
-      if (
-        (Math.abs(source.row - target.row) <= 1 && source.col === 0 && target.col === game.board[target.row].length - 1) ||
-        (source.col === game.board[source.col].length - 1 && target.col === 0)
-      ) {
-        // King moves 1 space in any direction over wrap
-        return true;
-      }
-    }
-    return false;
+  getKingMoves(game) {
+    return [];
   }
 }
 
