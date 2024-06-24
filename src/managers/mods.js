@@ -107,14 +107,14 @@ const Mods = [
         for (let i = 0; i < data.spaces.length; i++) {
           const space = data.spaces[i];
           const position = space.getPosition();
-          const row = position.getRow();
-          const col = position.getCol();
+          const row = position.row;
+          const col = position.col;
           const neighbors = space.getNeighbors();
           if (col === 0) {
-            neighbors.push({ space: game.board[row][data.width - 1], types: ["horizontal", "left"] });
+            neighbors.push({ space: new GridPosition(row, data.width - 1), type: "left" });
           }
           if (col === data.width - 1) {
-            neighbors.push({ space: game.board[row][0], types: ["horizontal", "right"] });
+            neighbors.push({ space: new GridPosition(row, 0), type: "right" });
           }
         }
         return "Continue";

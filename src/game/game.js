@@ -81,7 +81,7 @@ const Game = (props) => {
   async function onDrop(piece, target) {
     //create drag object
     var drag = {
-      sourceSquare: piece.getIndex(Chess().board),
+      sourceSquare: piece.currentPosition, //TODO: this should not be using cooordiantes, hacked in for now
       targetSquare: target,
     };
     // see if the move is legal
@@ -136,17 +136,23 @@ const Game = (props) => {
     setPieceInfo("");
   }
 
-  function greySquareMoves(square) {
-    var piece = Chess().board.spaces.find((space) => {
-      return space.position.getRow() === square.row && space.position.getCol() === square.col;
+  function greySquareMoves(position) {
+    var square = Chess().board.spaces.find((space) => {
+      return space.position.row === position.row && space.position.col === position.col;
     }); //TODO: this should not be using cooordiantes, hacked in for now
-    if (!piece) return;
+    if (!square) return;
 
     // get list of possible moves for this square
-    var moves = Chess().moves.filter((move) => move.from === square);
+    var allMoves = Chess().moves;
+    var moves = [];
+    for (var i = 0; i < allMoves.length; i++) {
+      if (allMoves[i].from.row === square.position.row && allMoves[i].from.col === square.position.col) {
+        moves.push(allMoves[i]);
+      }
+    }
 
     var squaresToHighlight = [];
-    squaresToHighlight.push(square);
+    squaresToHighlight.push(position);
 
     // highlight the possible squares for this piece
     for (var i = 0; i < moves.length; i++) {

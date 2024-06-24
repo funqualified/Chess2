@@ -83,7 +83,7 @@ class Chess {
     this.initialized = true;
     this.isCopy = false;
 
-    this.board = new Board(fen, this);
+    this.board = new Board(fen);
     this.moves = this.getMoves();
   }
 
@@ -100,13 +100,19 @@ class Chess {
   }
 
   getPieceInfo(square) {
-    const piece = this.board.getSpace(square.row, square.col).getPiece();
+    const piece = this.board.getSpace({ row: square.row, col: square.col }).getPiece();
+    var data = {
+      piece: piece,
+      info: null,
+    };
+    const defaultAction = gameEvent("GetPieceInfo", this, data);
+
+    if (!defaultAction) {
+      return data.info;
+    }
+
     if (piece) {
-      let sight = this.getPlayerSight(this.playerColor);
-      if (square.isIn(sight) || piece.color === this.playerColor) {
-        return piece.info(this);
-      }
-      return null;
+      return piece.info(this);
     }
     return null;
   }
@@ -131,20 +137,16 @@ class Chess {
 
     var winner = null;
     var hasValidMove = false;
-    for (let i = 0; i < this.board.length; i++) {
-      for (let j = 0; j < this.board[i].length; j++) {
-        const piece = this.board.getSpace(i, j).getPiece();
-        if (piece !== null && piece.color.charAt(0) === this.turn) {
-          this.movesByFrom(new GridPosition(i, j)).forEach((move) => {
-            var target = this.board.getSpace(move.to.row, move.to.col).getPiece();
-            hasValidMove = true;
-            if (target !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
-              winner = piece.color;
-            }
-          });
-        }
+
+    this.moves.forEach((move) => {
+      const piece = this.board.getSpace(move.from).getPiece();
+      const target = this.board.getSpace(move.to).getPiece();
+      if (piece !== null && piece.color.charAt(0) === this.turn) {
+        hasValidMove = true;
+      } else if (target !== null && piece !== null && target.color !== piece.color && target.fenId.toLowerCase() === "k") {
+        winner = piece.color;
       }
-    }
+    });
 
     if (!hasValidMove) {
       return this.turn === "w" ? "black" : "white";
@@ -158,10 +160,12 @@ class Chess {
 
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace(i, j).getPiece();
+        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
         if (!!piece) {
           piece.cacheLegalMoves(this);
-          moves.push.apply(piece.legalMoves);
+          piece.legalMoves.forEach((move) => {
+            moves.push({ from: new GridPosition(i, j), to: new GridPosition(move.row, move.col) }); //TODO: convert this system to use move objects
+          });
         }
       }
     }
@@ -170,7 +174,7 @@ class Chess {
   }
 
   movesByColor(color) {
-    return this.moves.filter((move) => this.board.getSpace(move.from.row, move.from.col).color === color);
+    return this.moves.filter((move) => this.board.getSpace(move.from).getPiece().color === color);
   }
 
   movesByFrom(from) {
@@ -182,10 +186,10 @@ class Chess {
 
     //Sort moves by best to worst
     moves.sort((a, b) => {
-      const pieceA = this.board.getSpace(a.from.row, a.from.col).getPiece();
-      const pieceB = this.board.getSpace(b.from.row, b.from.col).getPiece();
-      const targetPieceA = this.board.getSpace(a.to.row, a.to.col).getPiece();
-      const targetPieceB = this.board.getSpace(b.to.row, b.to.col).getPiece();
+      const pieceA = this.board.getSpace(a.from).getPiece();
+      const pieceB = this.board.getSpace(b.from).getPiece();
+      const targetPieceA = this.board.getSpace(a.to).getPiece();
+      const targetPieceB = this.board.getSpace(b.to).getPiece();
 
       var score = 0;
 
@@ -279,7 +283,7 @@ class Chess {
     //Add all pawn forward diagonals to sight
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace(i, j).getPiece();
+        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
         if (!!piece && piece.moveTypes.includes("pawn") && piece.color === this.playerColor) {
           if (piece.color === "white") {
             if (j > 0) {
@@ -308,7 +312,7 @@ class Chess {
     //Check if any enemy pieces can attack the king
     for (let i = 0; i < board.height; i++) {
       for (let j = 0; j < board.width; j++) {
-        const piece = board.getSpace(i, j).getPiece();
+        const piece = board.getSpace({ row: i, col: j }).getPiece();
         if (piece !== null && piece.color === enemyColor) {
           if (piece.isLegalMove(new GridPosition(i, j), kingIndex, board, this)) {
             return true;
@@ -330,11 +334,11 @@ class Chess {
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
         if (
-          this.board.getSpace(i, j).getPiece() !== null &&
-          this.board.getSpace(i, j).getPiece().color === color &&
-          this.board.getSpace(i, j).getPiece().fenId.toLowerCase() === "k"
+          this.board.getSpace({ row: i, col: j }).getPiece() !== null &&
+          this.board.getSpace({ row: i, col: j }).getPiece().color === color &&
+          this.board.getSpace({ row: i, col: j }).getPiece().fenId.toLowerCase() === "k"
         ) {
-          king = this.board.getSpace(i, j).getPiece();
+          king = this.board.getSpace({ row: i, col: j }).getPiece();
           kingIndex = new GridPosition(i, j);
           break;
         }
@@ -353,7 +357,7 @@ class Chess {
     //Check if any enemy pieces can attack the king
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace(i, j).getPiece();
+        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
         if (piece !== null && piece.color === enemyColor) {
           if (piece.isLegalMove(new GridPosition(i, j), kingIndex, this.board, this)) {
             return true;
@@ -372,8 +376,8 @@ class Chess {
     const copy = this.copy();
     const source = from;
     const target = to;
-    const piece = copy.board[source.row][source.col];
-    const targetPiece = copy.board[target.row][target.col];
+    const piece = copy.board.getSpace(source).getPiece();
+    const targetPiece = copy.board.getSpace(target).getPiece();
 
     var moveHandled = piece.move(copy, { from: source, to: target });
 
@@ -388,8 +392,8 @@ class Chess {
     });
 
     if (!moveHandled || !defaultAction) {
-      copy.board[source.row][source.col] = null;
-      copy.board[target.row][target.col] = piece;
+      copy.board.getSpace(source).setPiece(null);
+      copy.board.getSpace(target).setPiece(piece);
     }
     copy.endTurn(true);
 
@@ -397,33 +401,16 @@ class Chess {
   }
 
   isLegalMove(from, to) {
-    const source = from;
-    const target = to;
-    const piece = this.board.getSpace(source.row, source.col).getPiece();
-    const targetPiece = this.board.getSpace(target.row, target.col).getPiece();
-
-    if (!piece) {
-      return false;
-    }
-
-    if (!piece.isLegalMove(source, target, targetPiece, this)) {
-      return false;
-    }
-
-    var defaultAction = gameEvent("DoesMoveLeaveInCheck", this, { source: source, target: target, piece: piece, targetPiece: targetPiece });
-    if (!defaultAction) {
-      return true;
-    }
-
-    //Ensure move doesn't put or keep the player in check
-    if (!this.isCopy) {
-      const simulatedGame = this.simulateMove(from, to);
-      if (simulatedGame.isInCheck(piece.color)) {
-        return false;
+    var isLegal = false;
+    this.moves.forEach((move) => {
+      if (move.from.equals(from) && move.to.equals(to)) {
+        isLegal = true;
+        return;
       }
-    }
+    });
+    return isLegal;
 
-    return true;
+    //TODO: This function used to be much more complex. Check before this commit if the new code turns out to not work
   }
 
   game_over() {
@@ -472,8 +459,8 @@ class Chess {
 
       const source = move.sourceSquare;
       const target = move.targetSquare;
-      const targetPiece = this.board[target.row][target.col];
-      const piece = this.board[source.row][source.col];
+      const targetPiece = this.board.getSpace(target).getPiece();
+      const piece = this.board.getSpace(source).getPiece();
 
       const moveHandled = piece.move(this, { from: source, to: target });
 
@@ -488,8 +475,8 @@ class Chess {
       });
 
       if (!moveHandled || !defaultAction) {
-        this.board[source.row][source.col] = null;
-        this.board[target.row][target.col] = piece;
+        this.board.getSpace(source).setPiece(null);
+        this.board.getSpace(target).setPiece(piece);
       }
 
       await this.endTurn();

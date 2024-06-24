@@ -1,11 +1,11 @@
 import GridPosition from "../models/gridPosition";
 import { Piece, pieceFactory } from "./piece";
 import { gameEvent, gameEventAsync } from "./chess2";
+import Chess from "./chess2";
 
 class Board {
-  constructor(fen, game) {
+  constructor(fen) {
     this.spaces = [];
-    this.game = game;
     this.width = fen.split("/")[0].length;
     this.height = fen.split("/").length;
     this.createBoard(fen.split(" ")[0]);
@@ -23,7 +23,7 @@ class Board {
           var space = new Space(new GridPosition(i, col));
           this.spaces.push(space);
           // Put piece on space
-          const piece = pieceFactory(this.game, char, space.getPosition());
+          const piece = pieceFactory(Chess(), char, space.getPosition());
           space.setPiece(piece);
           col++;
         } else {
@@ -43,13 +43,13 @@ class Board {
     // TODO: Returns a deep copy of the board
   }
 
-  getSpace(row, col) {
-    return this.spaces[row * 8 + col];
+  getSpace(position) {
+    return this.spaces[position.row * this.width + position.col];
   }
 
   async endOfTurn(game, moves, defaultAction = false) {
     this.getPieces().forEach((piece) => {
-      piece.endOfTurn();
+      piece.endOfTurn(game, moves, defaultAction);
     });
   }
 
@@ -58,35 +58,35 @@ class Board {
   }
 
   addNeighbors() {
-    gameEvent("setSpaceNeighbors", this.game, { spaces: this.spaces, width: this.width, height: this.height });
+    gameEvent("setSpaceNeighbors", Chess(), { spaces: this.spaces, width: this.width, height: this.height });
     for (let i = 0; i < this.spaces.length; i++) {
       const space = this.spaces[i];
       const position = space.getPosition();
-      const row = position.getRow();
-      const col = position.getCol();
+      const row = position.row;
+      const col = position.col;
       const neighbors = [];
       if (row > 0) {
         if (col > 0) {
-          neighbors.push({ space: this.getSpace(row - 1, col - 1), types: ["diagonal", "up", "left"] });
+          neighbors.push({ space: new GridPosition(row - 1, col - 1), type: "upleft" });
         }
-        neighbors.push({ space: this.getSpace(row - 1, col), types: ["vertical", "up"] });
+        neighbors.push({ space: new GridPosition(row - 1, col), type: "up" });
         if (col < this.width - 1) {
-          neighbors.push({ space: this.getSpace(row - 1, col + 1), types: ["diagonal", "up", "right"] });
+          neighbors.push({ space: new GridPosition(row - 1, col + 1), type: "upright" });
         }
       }
       if (col > 0) {
-        neighbors.push({ space: this.getSpace(row, col - 1), types: ["horizontal", "left"] });
+        neighbors.push({ space: new GridPosition(row, col - 1), type: "left" });
       }
       if (col < this.width - 1) {
-        neighbors.push({ space: this.getSpace(row, col + 1), types: ["horizontal", "right"] });
+        neighbors.push({ space: new GridPosition(row, col + 1), type: "right" });
       }
       if (row < this.height - 1) {
         if (col > 0) {
-          neighbors.push({ space: this.getSpace(row + 1, col - 1), types: ["diagonal", "down", "left"] });
+          neighbors.push({ space: new GridPosition(row + 1, col - 1), type: "downleft" });
         }
-        neighbors.push({ space: this.getSpace(row + 1, col), types: ["vertical", "down"] });
+        neighbors.push({ space: new GridPosition(row + 1, col), type: "down" });
         if (col < this.width - 1) {
-          neighbors.push({ space: this.getSpace(row + 1, col + 1), types: ["diagonal", "down", "right"] });
+          neighbors.push({ space: new GridPosition(row + 1, col + 1), type: "downright" });
         }
       }
       space.addNeighbors(neighbors);
@@ -122,7 +122,9 @@ class Space {
 
   setPiece(piece) {
     this.piece = piece;
-    this.piece.setSpace(this);
+    if (this.piece) {
+      this.piece.setPosition(this.position);
+    }
   }
 
   getPosition() {
@@ -130,13 +132,18 @@ class Space {
   }
 
   getNeighbors() {
-    return this.neighbors;
+    const board = Chess().board;
+    return this.neighbors.map((neighbor) => {
+      return { space: board.getSpace(neighbor.position), type: neighbor.type };
+    });
   }
 
-  getNeighborOfTypes(types) {
-    return this.neighbors.find((neighbor) => {
-      return neighbor.types.some((type) => types.includes(type));
-    }).space;
+  getNeighborOfType(type) {
+    const board = Chess().board;
+    var position = this.neighbors.find((neighbor) => {
+      return neighbor.type === type;
+    })?.space;
+    return position ? board.getSpace(position) : null;
   }
 }
 

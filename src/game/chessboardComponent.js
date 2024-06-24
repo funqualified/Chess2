@@ -83,10 +83,10 @@ const ChessboardComponent = (props) => {
   function processBoard(board, orientation) {
     // Sort the board spaces using row and col based on the orientation
     var sortedBoard = board.spaces.sort((a, b) => {
-      if (orientation == "black") {
-        return a.position.getRow() - b.position.getRow() || a.position.getCol() - b.position.getCol(); // TODO: double check this
+      if (orientation == "white") {
+        return a.position.row - b.position.row || a.position.col - b.position.col; // TODO: double check this
       } else {
-        return b.position.getRow() - a.position.getRow() || b.position.getCol() - a.position.getCol();
+        return b.position.row - a.position.row || b.position.col - a.position.col;
       }
     });
     // Then split the board into rows
@@ -95,10 +95,10 @@ const ChessboardComponent = (props) => {
     var rowIndex = 0;
     for (var i = 0; i < sortedBoard.length; i++) {
       var space = sortedBoard[i];
-      if (space.position.getRow() != rowIndex) {
+      if (space.position.row != rowIndex) {
         processedBoard.push(row);
         row = [];
-        rowIndex = space.position.getRow();
+        rowIndex = space.position.row;
       }
       row.push(space);
     }
@@ -121,14 +121,14 @@ const ChessboardComponent = (props) => {
               {displayRow.map((square, squareIndex) => {
                 return (
                   <div
-                    className={squareClasses(square.position.getRow(), square.position.getCol())}
-                    key={square.position.getCol()}
-                    onMouseOver={() => onMouseOverSquare(square.position.getRow(), square.position.getCol())}
+                    className={squareClasses(square.position.row, square.position.col)}
+                    key={square.position.col}
+                    onMouseOver={() => onMouseOverSquare(square.position.row, square.position.col)}
                     onMouseOut={() => props.onMouseoutSquare(square)}
-                    onDrop={(e) => onDragEnd(e, heldPiece, square.position.getRow(), square.position.getCol())}
+                    onDrop={(e) => onDragEnd(e, heldPiece, square.position.row, square.position.col)}
                     onDragOver={(e) => e.preventDefault()}
-                    onTouchStart={(e) => onTouchStart(e, square.position.getRow(), square.position.getCol(), square)}>
-                    {square.getPiece() && !isFog(square.position.getRow(), square.position.getCol()) ? (
+                    onTouchStart={(e) => onTouchStart(e, square.position.row, square.position.col, square)}>
+                    {square.getPiece() && !isFog(square.position.row, square.position.col) ? (
                       <img
                         className="piece"
                         src={imageMap[`${square.getPiece().color[0]}${square.getPiece().fenId.toUpperCase()}`]}
@@ -138,7 +138,7 @@ const ChessboardComponent = (props) => {
                     ) : (
                       ""
                     )}
-                    {square && !isFog(square.position.getRow(), square.position.getCol()) ? <PieceStateIndicator piece={square} /> : ""}
+                    {square && !isFog(square.position.row, square.position.col) ? <PieceStateIndicator piece={square} /> : ""}
                   </div>
                 );
               })}
