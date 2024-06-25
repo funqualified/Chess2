@@ -1,6 +1,4 @@
-import gameplayUIManager from "./gameplayUI";
 import GridPosition from "../models/gridPosition";
-import Piece, { pieceFactory, clonePiece } from "./piece";
 import Board from "./board";
 
 async function gameEventAsync(type, game, data) {
@@ -37,18 +35,12 @@ class Chess {
   undo() {
     if (this.history.length > 0) {
       const move = this.history.pop();
-      this.board = move.board.map(function (innerArr) {
-        return innerArr.map(function (p) {
-          if (!p) {
-            return null;
-          }
-          return clonePiece(p);
-        });
-      });
+      this.board.restore(move.board);
       this.turn = move.turn;
       this.castling = move.castling;
       this.enPassant = new GridPosition(move.enPassant.row, move.enPassant.col);
       this.winner = null;
+      this.moves = this.getMoves();
       return true;
     }
     return false;
@@ -56,7 +48,7 @@ class Chess {
 
   copy() {
     const copy = new Chess();
-    copy.board = this.board.getCopy();
+    copy.board = this.board.save();
     copy.turn = this.turn;
     copy.castling = this.castling;
     copy.enPassant = this.enPassant;
@@ -100,7 +92,7 @@ class Chess {
   }
 
   getPieceInfo(square) {
-    const piece = this.board.getSpace({ row: square.row, col: square.col }).getPiece();
+    const piece = this.board.getSpace(new GridPosition(square.row, square.col)).getPiece();
     var data = {
       piece: piece,
       info: null,
@@ -160,7 +152,7 @@ class Chess {
 
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
+        const piece = this.board.getSpace(new GridPosition(i, j)).getPiece();
         if (!!piece) {
           piece.cacheLegalMoves(this);
           piece.legalMoves.forEach((move) => {
@@ -283,7 +275,7 @@ class Chess {
     //Add all pawn forward diagonals to sight
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
+        const piece = this.board.getSpace(new GridPosition(i, j)).getPiece();
         if (!!piece && piece.moveTypes.includes("pawn") && piece.color === this.playerColor) {
           if (piece.color === "white") {
             if (j > 0) {
@@ -312,9 +304,10 @@ class Chess {
     //Check if any enemy pieces can attack the king
     for (let i = 0; i < board.height; i++) {
       for (let j = 0; j < board.width; j++) {
-        const piece = board.getSpace({ row: i, col: j }).getPiece();
+        var position = new GridPosition(i, j);
+        const piece = board.getSpace(position).getPiece();
         if (piece !== null && piece.color === enemyColor) {
-          if (piece.isLegalMove(new GridPosition(i, j), kingIndex, board, this)) {
+          if (piece.isLegalMove(position, kingIndex, board, this)) {
             return true;
           }
         }
@@ -333,13 +326,14 @@ class Chess {
     //Find the king
     for (let i = 0; i < this.board.height; i++) {
       for (let j = 0; j < this.board.width; j++) {
+        var position = new GridPosition(i, j);
         if (
-          this.board.getSpace({ row: i, col: j }).getPiece() !== null &&
-          this.board.getSpace({ row: i, col: j }).getPiece().color === color &&
-          this.board.getSpace({ row: i, col: j }).getPiece().fenId.toLowerCase() === "k"
+          this.board.getSpace(position).getPiece() !== null &&
+          this.board.getSpace(position).getPiece().color === color &&
+          this.board.getSpace(position).getPiece().fenId.toLowerCase() === "k"
         ) {
-          king = this.board.getSpace({ row: i, col: j }).getPiece();
-          kingIndex = new GridPosition(i, j);
+          king = this.board.getSpace(position).getPiece();
+          kingIndex = position;
           break;
         }
       }
@@ -357,7 +351,7 @@ class Chess {
     //Check if any enemy pieces can attack the king
     for (let i = 0; i < this.board.length; i++) {
       for (let j = 0; j < this.board.width; j++) {
-        const piece = this.board.getSpace({ row: i, col: j }).getPiece();
+        const piece = this.board.getSpace(new GridPosition(i, j)).getPiece();
         if (piece !== null && piece.color === enemyColor) {
           if (piece.isLegalMove(new GridPosition(i, j), kingIndex, this.board, this)) {
             return true;

@@ -15,6 +15,34 @@ class Piece {
     this.currentPosition = null;
   }
 
+  save() {
+    return {
+      color: this.color,
+      fenId: this.fenId,
+      moveTypes: this.moveTypes,
+      name: this.name,
+      canPromote: this.canPromote,
+      startingPosition: { row: this.startingPosition.row, col: this.startingPosition.col },
+      legalMoves: this.legalMoves.map((move) => {
+        return { row: move.row, col: move.col };
+      }),
+      currentPosition: { row: this.currentPosition.row, col: this.currentPosition.col },
+    };
+  }
+
+  restore(state) {
+    this.color = state.color;
+    this.fenId = state.fenId;
+    this.moveTypes = state.moveTypes;
+    this.name = state.name;
+    this.canPromote = state.canPromote;
+    this.startingPosition = new GridPosition(state.startingPosition.row, state.startingPosition.col);
+    this.legalMoves = state.legalMoves.map((move) => {
+      return new GridPosition(move.row, move.col);
+    });
+    this.currentPosition = new GridPosition(state.currentPosition.row, state.currentPosition.col);
+  }
+
   setPosition(position) {
     this.currentPosition = position;
   }
@@ -84,45 +112,46 @@ class Piece {
   cacheLegalMoves(game) {
     this.legalMoves = [];
     this.moveTypes.forEach((element) => {
+      var moves = [];
       switch (element) {
         case "pawn":
-          var moves = this.getPawnMoves(game);
+          moves = this.getPawnMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "knight":
-          var moves = this.getKnightMoves(game);
+          moves = this.getKnightMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "horizontal":
-          var moves = this.getHorizontalMoves(game);
+          moves = this.getHorizontalMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "vertical":
-          var moves = this.getVerticalMoves(game);
+          moves = this.getVerticalMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "diagonal":
-          var moves = this.getDiagonalMoves(game);
+          moves = this.getDiagonalMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "king":
-          var moves = this.getKingMoves(game);
+          moves = this.getKingMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
           break;
         case "rook":
-          var moves = this.getHorizontalMoves(game);
+          moves = this.getHorizontalMoves(game);
           moves.forEach((move) => {
             this.legalMoves.push(move);
           });
@@ -144,7 +173,7 @@ class Piece {
       this.moveTypes.includes("pawn") &&
       move.from.equals(this.startingPosition) &&
       Math.abs(move.to.row - this.startingPosition.row) === 2 &&
-      move.from.col == move.to.col
+      move.from.col === move.to.col
     ) {
       game.enPassant = new GridPosition(Math.min(move.from.row, move.to.row) + 1, move.from.col);
       game.justDoubleMovedPawn = true;
@@ -196,7 +225,7 @@ class Piece {
       }
     }
 
-    if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col == this.startingPosition.col) {
+    if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col === this.startingPosition.col) {
       //get king index
       var kingIndex = null;
       game.board.forEach((space) => {

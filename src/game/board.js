@@ -1,5 +1,6 @@
 import GridPosition from "../models/gridPosition";
-import { Piece, pieceFactory } from "./piece";
+import Piece from "./piece";
+import { pieceFactory } from "./piece";
 import { gameEvent, gameEventAsync } from "./chess2";
 import Chess from "./chess2";
 
@@ -23,7 +24,7 @@ class Board {
           var space = new Space(new GridPosition(i, col));
           this.spaces.push(space);
           // Put piece on space
-          const piece = pieceFactory(Chess(), char, space.getPosition());
+          const piece = pieceFactory(Chess(), char, space.getPosition()); //TODO: stop using the piece factory
           space.setPiece(piece);
           col++;
         } else {
@@ -39,8 +40,39 @@ class Board {
     this.addNeighbors();
   }
 
-  getCopy() {
-    // TODO: Returns a deep copy of the board
+  save() {
+    return {
+      spaces: this.spaces.map((space) => {
+        return {
+          position: space.getPosition(),
+          piece: space.getPiece() ? space.getPiece().save() : null,
+          neighbors: space.getNeighbors().map((neighbor) => {
+            return {
+              position: neighbor.space.getPosition(),
+              type: neighbor.type,
+            };
+          }),
+          details: space.details,
+        };
+      }),
+      width: this.width,
+      height: this.height,
+    };
+  }
+
+  restore(state) {
+    this.width = state.width;
+    this.height = state.height;
+    this.spaces = state.spaces.map((space) => {
+      const newSpace = new Space(new GridPosition(space.position.row, space.position.col));
+      newSpace.addNeighbors(space.neighbors);
+      newSpace.details = space.details;
+      if (space.piece) {
+        newSpace.setPiece(new Piece());
+        newSpace.getPiece().restore(space.piece);
+      }
+      return newSpace;
+    });
   }
 
   getSpace(position) {
