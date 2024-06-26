@@ -2,17 +2,18 @@ import GridPosition from "../models/gridPosition";
 import Piece from "./piece";
 import { pieceFactory } from "./piece";
 import { gameEvent, gameEventAsync } from "./chess2";
-import Chess from "./chess2";
 
 class Board {
-  constructor(fen) {
-    this.spaces = [];
-    this.width = fen.split("/")[0].length;
-    this.height = fen.split("/").length;
-    this.createBoard(fen.split(" ")[0]);
+  constructor(game, fen) {
+    if (fen) {
+      this.spaces = [];
+      this.width = fen.split("/")[0].length;
+      this.height = fen.split("/").length;
+      this.createBoard(fen.split(" ")[0], game);
+    }
   }
 
-  createBoard(fen) {
+  createBoard(fen, game) {
     const rows = fen.split("/");
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
@@ -24,7 +25,7 @@ class Board {
           var space = new Space(new GridPosition(i, col));
           this.spaces.push(space);
           // Put piece on space
-          const piece = pieceFactory(Chess(), char, space.getPosition()); //TODO: stop using the piece factory
+          const piece = pieceFactory(game, char, space.getPosition()); //TODO: stop using the piece factory
           space.setPiece(piece);
           col++;
         } else {
@@ -37,18 +38,18 @@ class Board {
       }
     }
 
-    this.addNeighbors();
+    this.addNeighbors(game);
   }
 
   save() {
     return {
       spaces: this.spaces.map((space) => {
         return {
-          position: space.getPosition(),
+          position: { row: space.position.row, col: space.position.col },
           piece: space.getPiece() ? space.getPiece().save() : null,
-          neighbors: space.getNeighbors().map((neighbor) => {
+          neighbors: space.neighbors.map((neighbor) => {
             return {
-              position: neighbor.space.getPosition(),
+              space: { row: neighbor.space.row, col: neighbor.space.col },
               type: neighbor.type,
             };
           }),
@@ -89,8 +90,8 @@ class Board {
     return this.spaces.map((space) => space.getPiece()).filter((piece) => piece !== null);
   }
 
-  addNeighbors() {
-    gameEvent("setSpaceNeighbors", Chess(), { spaces: this.spaces, width: this.width, height: this.height });
+  addNeighbors(game) {
+    gameEvent("setSpaceNeighbors", game, { spaces: this.spaces, width: this.width, height: this.height });
     for (let i = 0; i < this.spaces.length; i++) {
       const space = this.spaces[i];
       const position = space.getPosition();
@@ -163,15 +164,8 @@ class Space {
     return this.position;
   }
 
-  getNeighbors() {
-    const board = Chess().board;
-    return this.neighbors.map((neighbor) => {
-      return { space: board.getSpace(neighbor.position), type: neighbor.type };
-    });
-  }
-
-  getNeighborOfType(type) {
-    const board = Chess().board;
+  getNeighborOfType(type, game) {
+    const board = game.board;
     var position = this.neighbors.find((neighbor) => {
       return neighbor.type === type;
     })?.space;

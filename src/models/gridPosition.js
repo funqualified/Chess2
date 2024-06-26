@@ -8,6 +8,7 @@ class GridPosition {
   }
 
   equals(other) {
+    if (!other) return false;
     return this.row === other.row && this.col === other.col;
   }
 

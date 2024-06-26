@@ -109,7 +109,7 @@ const Mods = [
           const position = space.getPosition();
           const row = position.row;
           const col = position.col;
-          const neighbors = space.getNeighbors();
+          const neighbors = space.neighbors;
           if (col === 0) {
             neighbors.push({ space: new GridPosition(row, data.width - 1), type: "left" });
           }

@@ -1,7 +1,6 @@
 import gameplayUIManager from "./gameplayUI";
 import GridPosition from "../models/gridPosition";
 import { gameEvent, gameEventAsync } from "./chess2";
-import Chess from "./chess2";
 
 class Piece {
   constructor(color, fenId, startingPosition, name = fenId, moveTypes = [], canPromote = false) {
@@ -47,8 +46,8 @@ class Piece {
     this.currentPosition = position;
   }
 
-  getCurrentSpace() {
-    return this.currentPosition ? Chess().board.getSpace(this.currentPosition) : null;
+  getCurrentSpace(game) {
+    return this.currentPosition ? game.board.getSpace(this.currentPosition) : null;
   }
 
   async endOfTurn(game, moves, defaultAction = false) {
@@ -227,16 +226,16 @@ class Piece {
 
     if (!game.isCopy && this.moveTypes.includes("rook") && move.from.col === this.startingPosition.col) {
       //get king index
-      var kingIndex = null;
-      game.board.forEach((space) => {
+      var kingPosition = null;
+      game.board.spaces.forEach((space) => {
         if (space.piece && space.piece.fenId.toUpperCase() === "K" && space.piece.color === this.color) {
-          kingIndex = space.position;
+          kingPosition = space.position;
           return;
         }
       });
 
       //Remove castling rights if rook moves, using chess960 rules
-      if (kingIndex != null && this.startingPosition.col < kingIndex.col) {
+      if (kingPosition != null && this.startingPosition.col < kingPosition.col) {
         game.castling = game.castling.replace(this.color === "white" ? "Q" : "q", "");
       } else {
         game.castling = game.castling.replace(this.color === "white" ? "K" : "k", "");
@@ -270,16 +269,16 @@ class Piece {
   getPawnMoves(game) {
     var moves = [];
     // Pawn moves forward 1 space if that space is empty
-    var targetSpace = this.getCurrentSpace().getNeighborOfType(this.color === "white" ? "up" : "down");
+    var targetSpace = this.getCurrentSpace(game).getNeighborOfType(this.color === "white" ? "up" : "down", game);
     if (targetSpace && targetSpace.piece === null) {
       moves.push(targetSpace.position);
     }
 
     // Pawn moves forward 2 spaces if it is on its starting row and the space in front of it is empty
     if (this.currentPosition.equals(this.startingPosition)) {
-      targetSpace = this.getCurrentSpace().getNeighborOfType(this.color === "white" ? "up" : "down");
+      targetSpace = this.getCurrentSpace(game).getNeighborOfType(this.color === "white" ? "up" : "down", game);
       if (targetSpace && targetSpace.piece === null) {
-        targetSpace = targetSpace.getNeighborOfType(this.color === "white" ? "up" : "down");
+        targetSpace = targetSpace.getNeighborOfType(this.color === "white" ? "up" : "down", game);
         if (targetSpace && targetSpace.piece === null) {
           moves.push(targetSpace.position);
         }
@@ -287,22 +286,22 @@ class Piece {
     }
 
     // Pawn captures diagonally
-    targetSpace = this.getCurrentSpace().getNeighborOfType(this.color === "white" ? "upleft" : "downleft");
+    targetSpace = this.getCurrentSpace(game).getNeighborOfType(this.color === "white" ? "upleft" : "downleft", game);
     if (targetSpace && targetSpace.piece && targetSpace.piece.color !== this.color) {
       moves.push(targetSpace.position);
     }
 
-    targetSpace = this.getCurrentSpace().getNeighborOfType(this.color === "white" ? "upright" : "downright");
+    targetSpace = this.getCurrentSpace(game).getNeighborOfType(this.color === "white" ? "upright" : "downright", game);
     if (targetSpace && targetSpace.piece && targetSpace.piece.color !== this.color) {
       moves.push(targetSpace.position);
     }
 
     // Pawn en passant TODO: fix this
     if (game.justDoubleMovedPawn) {
-      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downleft" : "upleft"))) {
+      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downleft" : "upleft", game))) {
         moves.push(game.enPassant);
       }
-      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downright" : "upright"))) {
+      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downright" : "upright", game))) {
         moves.push(game.enPassant);
       }
     }
@@ -312,15 +311,15 @@ class Piece {
 
   getKnightMoves(game) {
     var moves = [];
-    var space = this.getCurrentSpace();
-    var uptwo = space?.getNeighborOfType("up")?.getNeighborOfType("up");
-    var downtwo = space?.getNeighborOfType("down")?.getNeighborOfType("down");
-    var lefttwo = space?.getNeighborOfType("left")?.getNeighborOfType("left");
-    var righttwo = space?.getNeighborOfType("right")?.getNeighborOfType("right");
+    var space = this.getCurrentSpace(game);
+    var uptwo = space?.getNeighborOfType("up", game)?.getNeighborOfType("up", game);
+    var downtwo = space?.getNeighborOfType("down", game)?.getNeighborOfType("down", game);
+    var lefttwo = space?.getNeighborOfType("left", game)?.getNeighborOfType("left", game);
+    var righttwo = space?.getNeighborOfType("right", game)?.getNeighborOfType("right", game);
 
     if (uptwo) {
-      var upleft = uptwo.getNeighborOfType("left");
-      var upright = uptwo.getNeighborOfType("right");
+      var upleft = uptwo.getNeighborOfType("left", game);
+      var upright = uptwo.getNeighborOfType("right", game);
       if (upleft && (upleft.piece === null || upleft.piece.color !== this.color)) {
         moves.push(upleft.position);
       }
@@ -330,8 +329,8 @@ class Piece {
     }
 
     if (downtwo) {
-      var downleft = downtwo.getNeighborOfType("left");
-      var downright = downtwo.getNeighborOfType("right");
+      var downleft = downtwo.getNeighborOfType("left", game);
+      var downright = downtwo.getNeighborOfType("right", game);
       if (downleft && (downleft.piece === null || downleft.piece.color !== this.color)) {
         moves.push(downleft.position);
       }
@@ -341,8 +340,8 @@ class Piece {
     }
 
     if (lefttwo) {
-      var leftup = lefttwo.getNeighborOfType("up");
-      var leftdown = lefttwo.getNeighborOfType("down");
+      var leftup = lefttwo.getNeighborOfType("up", game);
+      var leftdown = lefttwo.getNeighborOfType("down", game);
       if (leftup && (leftup.piece === null || leftup.piece.color !== this.color)) {
         moves.push(leftup.position);
       }
@@ -352,8 +351,8 @@ class Piece {
     }
 
     if (righttwo) {
-      var rightup = righttwo.getNeighborOfType("up");
-      var rightdown = righttwo.getNeighborOfType("down");
+      var rightup = righttwo.getNeighborOfType("up", game);
+      var rightdown = righttwo.getNeighborOfType("down", game);
       if (rightup && (rightup.piece === null || rightup.piece.color !== this.color)) {
         moves.push(rightup.position);
       }
@@ -367,8 +366,8 @@ class Piece {
 
   getHorizontalMoves(game) {
     var moves = [];
-    var space = this.getCurrentSpace();
-    var left = space.getNeighborOfType("left");
+    var space = this.getCurrentSpace(game);
+    var left = space.getNeighborOfType("left", game);
     while (left) {
       if (left.piece === null) {
         moves.push(left.position);
@@ -378,10 +377,10 @@ class Piece {
       } else {
         break;
       }
-      left = left.getNeighborOfType("left");
+      left = left.getNeighborOfType("left", game);
     }
 
-    var right = space.getNeighborOfType("right");
+    var right = space.getNeighborOfType("right", game);
     while (right) {
       if (right.piece === null) {
         moves.push(right.position);
@@ -391,7 +390,7 @@ class Piece {
       } else {
         break;
       }
-      right = right.getNeighborOfType("right");
+      right = right.getNeighborOfType("right", game);
     }
 
     return moves;
@@ -399,8 +398,8 @@ class Piece {
 
   getVerticalMoves(game) {
     var moves = [];
-    var space = this.getCurrentSpace();
-    var up = space.getNeighborOfType("up");
+    var space = this.getCurrentSpace(game);
+    var up = space.getNeighborOfType("up", game);
     while (up) {
       if (up.piece === null) {
         moves.push(up.position);
@@ -410,10 +409,10 @@ class Piece {
       } else {
         break;
       }
-      up = up.getNeighborOfType("up");
+      up = up.getNeighborOfType("up", game);
     }
 
-    var down = space.getNeighborOfType("down");
+    var down = space.getNeighborOfType("down", game);
     while (down) {
       if (down.piece === null) {
         moves.push(down.position);
@@ -423,7 +422,7 @@ class Piece {
       } else {
         break;
       }
-      down = down.getNeighborOfType("down");
+      down = down.getNeighborOfType("down", game);
     }
 
     return moves;
@@ -431,8 +430,8 @@ class Piece {
 
   getDiagonalMoves(game) {
     var moves = [];
-    var space = this.getCurrentSpace();
-    var upleft = space.getNeighborOfType("upleft");
+    var space = this.getCurrentSpace(game);
+    var upleft = space.getNeighborOfType("upleft", game);
     while (upleft) {
       if (upleft.piece === null) {
         moves.push(upleft.position);
@@ -442,10 +441,10 @@ class Piece {
       } else {
         break;
       }
-      upleft = upleft.getNeighborOfType("upleft");
+      upleft = upleft.getNeighborOfType("upleft", game);
     }
 
-    var upright = space.getNeighborOfType("upright");
+    var upright = space.getNeighborOfType("upright", game);
     while (upright) {
       if (upright.piece === null) {
         moves.push(upright.position);
@@ -455,10 +454,10 @@ class Piece {
       } else {
         break;
       }
-      upright = upright.getNeighborOfType("upright");
+      upright = upright.getNeighborOfType("upright", game);
     }
 
-    var downleft = space.getNeighborOfType("downleft");
+    var downleft = space.getNeighborOfType("downleft", game);
     while (downleft) {
       if (downleft.piece === null) {
         moves.push(downleft.position);
@@ -468,10 +467,10 @@ class Piece {
       } else {
         break;
       }
-      downleft = downleft.getNeighborOfType("downleft");
+      downleft = downleft.getNeighborOfType("downleft", game);
     }
 
-    var downright = space.getNeighborOfType("downright");
+    var downright = space.getNeighborOfType("downright", game);
     while (downright) {
       if (downright.piece === null) {
         moves.push(downright.position);
@@ -481,7 +480,7 @@ class Piece {
       } else {
         break;
       }
-      downright = downright.getNeighborOfType("downright");
+      downright = downright.getNeighborOfType("downright", game);
     }
 
     return moves;
@@ -489,36 +488,36 @@ class Piece {
 
   getKingMoves(game) {
     var moves = [];
-    var space = this.getCurrentSpace();
-    var up = space.getNeighborOfType("up");
+    var space = this.getCurrentSpace(game);
+    var up = space.getNeighborOfType("up", game);
     if (up && (up.piece === null || up.piece.color !== this.color)) {
       moves.push(up.position);
     }
-    var down = space.getNeighborOfType("down");
+    var down = space.getNeighborOfType("down", game);
     if (down && (down.piece === null || down.piece.color !== this.color)) {
       moves.push(down.position);
     }
-    var left = space.getNeighborOfType("left");
+    var left = space.getNeighborOfType("left", game);
     if (left && (left.piece === null || left.piece.color !== this.color)) {
       moves.push(left.position);
     }
-    var right = space.getNeighborOfType("right");
+    var right = space.getNeighborOfType("right", game);
     if (right && (right.piece === null || right.piece.color !== this.color)) {
       moves.push(right.position);
     }
-    var upleft = space.getNeighborOfType("upleft");
+    var upleft = space.getNeighborOfType("upleft", game);
     if (upleft && (upleft.piece === null || upleft.piece.color !== this.color)) {
       moves.push(upleft.position);
     }
-    var upright = space.getNeighborOfType("upright");
+    var upright = space.getNeighborOfType("upright", game);
     if (upright && (upright.piece === null || upright.piece.color !== this.color)) {
       moves.push(upright.position);
     }
-    var downleft = space.getNeighborOfType("downleft");
+    var downleft = space.getNeighborOfType("downleft", game);
     if (downleft && (downleft.piece === null || downleft.piece.color !== this.color)) {
       moves.push(downleft.position);
     }
-    var downright = space.getNeighborOfType("downright");
+    var downright = space.getNeighborOfType("downright", game);
     if (downright && (downright.piece === null || downright.piece.color !== this.color)) {
       moves.push(downright.position);
     }
