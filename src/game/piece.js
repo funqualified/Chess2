@@ -190,6 +190,7 @@ class Piece {
       var defaultAction = gameEvent("EnPassantCapture", game, { piece: this, move: move, targetPiece: targetPiece });
       if (defaultAction) {
         game.board.getSpace(new GridPosition(move.from.row, move.to.col)).setPiece(null);
+        game.board.getSpace(move.from).setPiece(null);
         game.board.getSpace(move.to).setPiece(this);
       }
       return true;
@@ -214,8 +215,8 @@ class Piece {
         game.board.getSpace(move.to).setPiece(null);
         //TODO: remove hardcoding
         if (move.to.col > move.from.col) {
-          game.board.getSpace(new GridPosition(move.to.row, 5)).setPiece(targetPiece);
-          game.board.getSpace(new GridPosition(move.to.row, 6)).setPiece(this);
+          game.board.getSpace(new GridPosition(move.to.row, game.board.width - 3)).setPiece(targetPiece);
+          game.board.getSpace(new GridPosition(move.to.row, game.board.width - 2)).setPiece(this);
         } else {
           game.board.getSpace(new GridPosition(move.to.row, 3)).setPiece(targetPiece);
           game.board.getSpace(new GridPosition(move.to.row, 2)).setPiece(this);
@@ -296,12 +297,14 @@ class Piece {
       moves.push(targetSpace.position);
     }
 
-    // Pawn en passant TODO: fix this
-    if (game.justDoubleMovedPawn) {
-      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downleft" : "upleft", game))) {
+    // Pawn en passant
+    if (!game.enPassant.equals(new GridPosition(-1, -1))) {
+      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downleft" : "upleft", game)?.position)) {
         moves.push(game.enPassant);
       }
-      if (this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downright" : "upright", game))) {
+      if (
+        this.currentPosition.equals(game.board.getSpace(game.enPassant).getNeighborOfType(this.color === "white" ? "downright" : "upright", game)?.position)
+      ) {
         moves.push(game.enPassant);
       }
     }

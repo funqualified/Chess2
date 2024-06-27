@@ -165,7 +165,6 @@ class Chess {
     }
 
     if (!this.isCopy) {
-      //TODO: Invalid moves are not being filtered out
       //Filter out moves that would put the player in check
       moves = moves.filter((move) => {
         if (this.board.getSpace(move.from).getPiece().color[0] !== this.turn) return true;
@@ -174,7 +173,6 @@ class Chess {
           return space.getPiece() !== null && space.getPiece().color[0] === this.turn && space.getPiece().fenId.toLowerCase() === "k";
         }).position;
         const remove = copy.isCheck(kingPosition);
-        console.log("remove", remove);
         return !remove;
       });
     }
